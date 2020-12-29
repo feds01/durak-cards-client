@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
+import {lobby, events} from "shared";
 import styles from './index.module.scss';
 import GameSecurityCard from "../SecurityCard";
-import {lobby} from "shared";
 
 Passphrase.propTypes = {
     passphrase: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -32,7 +32,7 @@ function Passphrase(props) {
             setPassphrase(newPassphrase);
 
             // send message on ws to update the client
-            props.ws.emit("update_passphrase", {passphrase: newPassphrase.join("")});
+            props.ws.emit(events.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
         }
 
     }, [timeLeft]);

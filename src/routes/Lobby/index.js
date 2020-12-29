@@ -16,7 +16,7 @@ import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
 import {getAuthTokens} from "../../utils/auth";
 import LoadingScreen from "../../components/LoadingScreen";
-import {error, game} from "shared";
+import {error, events, game} from "shared";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -46,7 +46,7 @@ class LobbyRoute extends React.Component {
 
         // client-side
         socket.on("connect", () => {
-            socket.emit("join_game", {});
+            socket.emit(events.JOIN_GAME, {});
         });
 
         socket.on("connect_error", err => {
@@ -79,7 +79,7 @@ class LobbyRoute extends React.Component {
 
         // if the client is successfully authenticated and joined the lobby
         // on the server, then we can begin to load the lobby...
-        socket.on("joined_game", (message) => {
+        socket.on(events.JOINED_GAME, (message) => {
             // console.log("players: ", message);
             this.setState({
                 loaded: true,
@@ -90,7 +90,7 @@ class LobbyRoute extends React.Component {
 
         // If a new player joins the lobby, we should update the player
         // list
-        socket.on("new_player", (message) => {
+        socket.on(events.NEW_PLAYER, (message) => {
             this.setState((oldState) => {
                 return {
                     lobby: {
@@ -104,12 +104,12 @@ class LobbyRoute extends React.Component {
 
 
         // set the lobby stage to 'countdown'
-        socket.on("countdown", (message) => {
+        socket.on(events.COUNTDOWN, () => {
             this.setState({stage: game.GameState.STARTED});
         });
 
         // set the lobby stage to 'game'
-        socket.on("game_started", (message) => {
+        socket.on(events.GAME_STARTED, () => {
             this.setState({stage: game.GameState.PLAYING});
         });
 
