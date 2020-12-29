@@ -7,10 +7,9 @@
  */
 
 import React from "react";
-import Prompt from "../../components/Prompt";
-import PlayingCardsIcon from './../../assets/image/playing-cards.svg'
-import {ReactComponent as PlayingCardIcon} from './../../assets/image/playing-card.svg';
 import Logo from "../../components/Logo";
+import Prompt from "../../components/Prompt";
+import {ReactComponent as PlayingCardIcon} from './../../assets/image/playing-card.svg';
 
 const HomeRoute = () => {
     return (
