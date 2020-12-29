@@ -7,7 +7,7 @@ import {lobby} from "shared";
 Passphrase.propTypes = {
     passphrase: PropTypes.arrayOf(PropTypes.string).isRequired,
     timeout: PropTypes.number.isRequired,
-    ws: PropTypes.func.isRequired,
+    ws: PropTypes.object.isRequired,
 }
 
 function Passphrase(props) {
@@ -26,13 +26,13 @@ function Passphrase(props) {
 
     useEffect(() => {
         if (timeLeft === 0) {
-            const newPassphrase = lobby.createGamePassphrase();
+            const newPassphrase = lobby.createGamePassphrase().split("");
 
             setTimeLeft(props.timeout);
             setPassphrase(newPassphrase);
 
             // send message on ws to update the client
-            props.ws.emit("update_passphrase", {passphrase: newPassphrase});
+            props.ws.emit("update_passphrase", {passphrase: newPassphrase.join("")});
         }
 
     }, [timeLeft]);
