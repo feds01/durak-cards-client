@@ -6,9 +6,26 @@ import PlayerCounter from "../../../components/PlayerCounter";
 import Logo from "../../../components/Logo";
 import Button from "@material-ui/core/Button";
 import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
-import StarBorderOutlined from "@material-ui/icons/StarBorderOutlined";
+import PlayerItem from "../../../components/PlayerItem";
+import {events} from "shared";
 
 class WaitingRoom extends Component {
+    constructor(props) {
+        super(props);
+
+        this.onKick = this.onKick.bind(this);
+    }
+
+
+    /**
+     * Function to send a 'kick' request to the server for a specific player
+     * within the lobby which is specified by name.
+     * */
+    onKick(name) {
+        this.props.ws.emit(events.KICK_PLAYER, {name});
+    }
+
+
     render() {
         const {isHost, id, ws, lobby} = this.props;
 
@@ -54,13 +71,17 @@ class WaitingRoom extends Component {
 
                 <div className={styles.Players}>
                     {
-                        lobby.players.map((player, index) => {
-                            if (player === lobby.owner) {
-                                return (<div key={index}>{player} <StarBorderOutlined/></div>);
-                            } else {
-                                return (<div key={index}>{player}</div>);
-                            }
-                        })
+                        lobby.players.map((player, index) => (
+                            <PlayerItem
+                                key={index}
+                                isOwner={player === lobby.owner}
+                                name={player}
+                                isHost={isHost}
+                                {...(isHost && {
+                                    onKick: () => this.props.onKick(player),
+                                })}
+                            />
+                        ))
                     }
                 </div>
             </div>

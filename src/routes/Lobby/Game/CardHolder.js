@@ -10,7 +10,7 @@ const CardHolder = props => {
 };
 
 CardHolder.propTypes = {
-    
+
 };
 
 export default CardHolder;
