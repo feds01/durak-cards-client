@@ -49,6 +49,14 @@ class LobbyRoute extends React.Component {
             socket.emit(events.JOIN_GAME, {});
         });
 
+
+        // The server disconnected us for some reason... re-direct back to home page and
+        // clear the session so the user isn't using stale JWTs
+        socket.on("close", (event) => {
+            sessionStorage.clear();
+            this.props.history.push("/");
+        });
+
         socket.on("connect_error", err => {
 
             // ensure that the transmitted 'connection_error' is an

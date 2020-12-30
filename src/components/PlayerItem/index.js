@@ -7,17 +7,25 @@ import IconButton from "@material-ui/core/IconButton";
 
 const PlayerItem = props => {
     return (
-            <div className={styles.Name}>
-                <span>
-                     {props.name}
+        <div className={styles.Name}>
+                <div>
+                    {props.name}
                     {props.isOwner && <StarBorderOutlined/>}
-                </span>
-                {!props.isOwner && props.isHost && (
-                    <IconButton aria-label="delete" onClick={props.onKick}>
-                        <ClearIcon />
-                    </IconButton>
-                )}
-            </div>
+                </div>
+            {!props.isOwner && props.isHost && (
+                <IconButton
+                    disableRipple
+                    disableFocusRipple
+                    disableTouchRipple
+                    className={styles.Button}
+                    size={"small"}
+                    aria-label="delete"
+                    onClick={props.onKick}
+                >
+                    <ClearIcon/>
+                </IconButton>
+            )}
+        </div>
     );
 };
 

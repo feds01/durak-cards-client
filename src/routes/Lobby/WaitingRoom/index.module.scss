@@ -51,22 +51,4 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(2, minmax(120px, 1fr));
-
-  & div {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px;
-    font-weight: bold;
-    text-align: center;
-  }
-
-  & div {
-    justify-content: center;
-    display: inline-flex;
-
-    & svg {
-      height: 100%;
-    }
-  }
 }

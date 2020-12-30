@@ -55,10 +55,9 @@ class WaitingRoom extends Component {
                                 height: 40
                             }}
                             onClick={() => {
-
                                 // emit the 'game_start' event and let all other clients
                                 // begin the 'countdown stage.
-                                ws.emit("start_game");
+                                ws.emit(events.START_GAME);
                             }}
                             disabled={lobby.players.length < 2}
                             color={'primary'}
@@ -78,7 +77,7 @@ class WaitingRoom extends Component {
                                 name={player}
                                 isHost={isHost}
                                 {...(isHost && {
-                                    onKick: () => this.props.onKick(player),
+                                    onKick: () => this.onKick(player),
                                 })}
                             />
                         ))
