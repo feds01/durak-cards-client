@@ -26,7 +26,7 @@ function Passphrase(props) {
 
     useEffect(() => {
         if (timeLeft === 0) {
-            const newPassphrase = lobby.createGamePassphrase().split("");
+            const newPassphrase = lobby.createGamePassphrase();
 
             setTimeLeft(props.timeout);
             setPassphrase(newPassphrase);

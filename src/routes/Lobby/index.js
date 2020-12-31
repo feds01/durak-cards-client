@@ -112,6 +112,10 @@ class LobbyRoute extends React.Component {
             });
         });
 
+        socket.onAny((event, ...args) => {
+            console.log(event);
+        })
+
         // Authentication related for refreshing tokens. Essentially invoke a
         // re-connection; close the socket, update tokens and then re-open the
         // socket connection with the new tokens.
