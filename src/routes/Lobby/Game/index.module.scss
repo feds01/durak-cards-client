@@ -1,9 +1,11 @@
-.Game {
-  .Canvas {
+.GameContainer {
+  width: 100vw;
+  height: 100vh;
 
-  }
+  display: flex;
+  flex-direction: column;
+  flex: 0 auto;
+  align-items: center;
 
-  .Deck {
 
-  }
 }

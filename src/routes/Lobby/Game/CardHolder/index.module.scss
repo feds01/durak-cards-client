@@ -1,0 +1,54 @@
+$gutter: 20px;
+
+.Container {
+  min-height: 300px;
+  max-height: 300px;
+  width: 100%;
+  padding-bottom: 1em !important;
+}
+
+
+.Cards {
+  grid-column: center-start / -1;
+  overflow: auto;
+  display: flex;
+  height: 100%;
+  padding-bottom: 1em;
+  justify-content: center;
+
+  // disable scrollbar
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &:after, &:before {
+    content: '';
+    width: 10px;
+  }
+
+  & .Card {
+    cursor: pointer;
+    background-color: transparent;
+    border-radius: 12px;
+    border: 1px black solid;
+
+    height: 100%;
+    width: 13em;
+    min-width: 13em;
+    margin-right: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    & img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.Actions {
+  display: none;
+}

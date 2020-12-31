@@ -14,7 +14,7 @@ import {withRouter} from "react-router";
 import Game from "./Game";
 import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
-import {getAuthTokens} from "../../utils/auth";
+import {getAuthTokens, updateTokens} from "../../utils/auth";
 import LoadingScreen from "../../components/LoadingScreen";
 import {error, events, game} from "shared";
 
@@ -53,8 +53,10 @@ class LobbyRoute extends React.Component {
         // The server disconnected us for some reason... re-direct back to home page and
         // clear the session so the user isn't using stale JWTs
         socket.on("close", (event) => {
-            sessionStorage.clear();
-            this.props.history.push("/");
+            if (event.reason === "kicked") {
+                sessionStorage.clear();
+                this.props.history.push("/");
+            }
         });
 
         socket.on("connect_error", err => {
@@ -108,6 +110,19 @@ class LobbyRoute extends React.Component {
                     }
                 }
             });
+        });
+
+        // Authentication related for refreshing tokens. Essentially invoke a
+        // re-connection; close the socket, update tokens and then re-open the
+        // socket connection with the new tokens.
+        socket.on("token", (tokens) => {
+            socket.close();
+
+            // Update our session with the new tokens and the socket query
+            updateTokens(...tokens);
+            socket.query = {...tokens};
+
+            socket.connect();
         });
 
 

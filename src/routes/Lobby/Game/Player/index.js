@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const CardHolder = props => {
+const Player = props => {
     return (
         <div>
 
@@ -9,8 +9,8 @@ const CardHolder = props => {
     );
 };
 
-CardHolder.propTypes = {
+Player.propTypes = {
 
 };
 
-export default CardHolder;
+export default Player;

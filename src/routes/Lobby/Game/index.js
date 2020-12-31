@@ -1,14 +1,21 @@
-import React, {useState} from 'react';
 import PropTypes from 'prop-types';
+import React, {useState} from 'react';
+import styles from "./index.module.scss";
+
+import Table from "./Table";
 import CardHolder from "./CardHolder";
+import PlayerActions from "./PlayerActions";
 
 const Game = props => {
-    const [cards, setCards] = useState([]);
+    const [cards, setCards] = useState(["8H", "QS", "9D", "3H", "JD", "4C"]);
 
     return (
         <div>
 
-            <CardHolder cards={cards} />
+            <div className={styles.GameContainer}>
+                <Table/>
+                <CardHolder cards={cards} />
+            </div>
         </div>
     );
 };
