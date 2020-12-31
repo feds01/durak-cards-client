@@ -13,7 +13,7 @@ function App() {
                 <Route exact path={'/'} component={HomeRoute}/>
                 <Route exact path={'/login'} component={LoginRoute}/>
                 <Route exact path={'/user'} component={UserRoute}/>
-                <Route exact path={'/lobby/:id'} component={LobbyRoute}/>
+                <Route exact path={'/lobby/:pin'} component={LobbyRoute}/>
                 <Route render={() => <Redirect to="/"/>}/>
             </Switch>
         </BrowserRouter>

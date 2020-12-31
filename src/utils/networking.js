@@ -12,6 +12,10 @@ export async function joinLobby(pin, credentials) {
     }).then((res) => res.json());
 }
 
+export async function getLobby(pin) {
+    return await fetch(`/api/lobby/${pin}`).then((res) => res.json());
+}
+
 
 export async function login(name, password) {
     const payload = JSON.stringify({name, password});

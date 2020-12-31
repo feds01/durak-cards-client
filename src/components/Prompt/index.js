@@ -2,7 +2,7 @@ import './index.scss';
 import GamePin from "./GamePin";
 import GameName from "./GameName";
 import GamePassphrase from "./GamePassphrase";
-import {joinLobby} from "../../utils/networking";
+import {getLobby, joinLobby} from "../../utils/networking";
 import {updateTokens} from "./../../utils/auth";
 
 import React from 'react';
@@ -22,6 +22,23 @@ class Prompt extends React.Component {
         }
 
         this.onSubmit = this.onSubmit.bind(this);
+    }
+
+    async componentDidMount() {
+
+        if (typeof this.props.pin !== 'undefined') {
+
+            // verify that the given pin exists, if so set that as the pin number
+            // and move onto the name stage.
+            await getLobby(this.props.pin).then((res) => {
+                if (res.status) {
+                    this.setState({
+                        pin: this.props.pin,
+                        stage: "name"
+                    });
+                }
+            })
+        }
     }
 
     async onSubmit(passphrase) {

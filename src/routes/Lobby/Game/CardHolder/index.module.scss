@@ -1,8 +1,8 @@
 $gutter: 20px;
 
 .Container {
-  min-height: 300px;
-  max-height: 300px;
+  min-height: 250px;
+  max-height: 250px;
   width: 100%;
   padding-bottom: 1em !important;
 }
@@ -35,8 +35,8 @@ $gutter: 20px;
     border: 1px black solid;
 
     height: 100%;
-    width: 13em;
-    min-width: 13em;
+    width: 9em;
+    min-width: 9em;
     margin-right: 1em;
     display: flex;
     align-items: center;

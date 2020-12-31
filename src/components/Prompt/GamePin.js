@@ -3,6 +3,7 @@ import {Formik} from "formik";
 import Input from "../Input";
 import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
+import {getLobby} from "../../utils/networking";
 
 const GamePin = (props) => {
     return (
@@ -20,7 +21,7 @@ const GamePin = (props) => {
             onSubmit={async (values, {setSubmitting, setErrors}) => {
                 // make a request to the API to check if there is a game with the given pin,
                 // and if so we'll set the next stage of the prompt (enter the pin).
-                await fetch(`/api/lobby/${values.pin}`).then((res) => res.json()).then((res) => {
+               await getLobby(values.pin).then((res) => {
                     if (!res.status) {
                         setErrors({pin: res.message});
                     } else {

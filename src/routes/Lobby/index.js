@@ -23,8 +23,8 @@ class LobbyRoute extends React.Component {
         super(props);
 
         this.state = {
-            id: null,
-            ws: null,
+            pin: null,
+            socket: null,
             isHost: false,
             loaded: false,
             lobby: {},
@@ -34,15 +34,15 @@ class LobbyRoute extends React.Component {
     }
 
     componentDidMount() {
-        const id = this.props.match.params.id;
-
         // if the id does not match hello a 6 digit pin, then re-direct the user to home page..
-        if (!id.match(/^\d{6}$/g)) {
+        if (!this.props.match.params.pin.match(/^\d{6}$/g)) {
             this.props.history.push("/");
         }
 
+        const pin = parseInt(this.props.match.params.pin);
+
         // TODO: move websocket endpoint to config
-        const socket = io(`localhost:5000/${id}`, {query: getAuthTokens(), transports: ["websocket"]});
+        const socket = io(`localhost:5000/${pin}`, {query: getAuthTokens(), transports: ["websocket"]});
 
         // client-side
         socket.on("connect", () => {
@@ -69,8 +69,13 @@ class LobbyRoute extends React.Component {
                 // if the user is not allowed to join this lobby: re-direct the
                 // user back to the home page from where they can re-try to
                 // join the lobby
-                if (err.message === error.AUTHENTICATION_FAILED || err.message === error.NON_EXISTENT_LOBBY) {
+                if (err.message === error.NON_EXISTENT_LOBBY) {
                     this.props.history.push("/");
+                } else if (err.message === error.AUTHENTICATION_FAILED) {
+                    this.props.history.push({
+                        pathname: "/",
+                        state: {pin}
+                    });
                 }
 
                 // if the user is authenticated but they are trying to join a
@@ -140,16 +145,13 @@ class LobbyRoute extends React.Component {
             this.setState({stage: game.GameState.PLAYING});
         });
 
-        this.setState({
-            ws: socket,
-            id: id
-        });
+        this.setState({socket, pin});
     }
 
     componentWillUnmount() {
         // disconnect the socket if a connection was established.
-        if (this.state.ws !== null) {
-            this.state.ws.disconnect();
+        if (this.state.socket !== null) {
+            this.state.socket.disconnect();
         }
     }
 

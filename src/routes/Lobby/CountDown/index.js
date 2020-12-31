@@ -16,13 +16,6 @@ const CountDown = () => {
         }
     });
 
-    useEffect(() => {
-        if (timeLeft === 0) {
-            console.log("start game!")
-        }
-
-    }, [timeLeft]);
-
     return (
         <div className={styles.Countdown}>
             <p className={styles.Number}>{timeLeft}</p>

@@ -7,7 +7,7 @@ import GameSecurityCard from "../SecurityCard";
 Passphrase.propTypes = {
     passphrase: PropTypes.arrayOf(PropTypes.string).isRequired,
     timeout: PropTypes.number.isRequired,
-    ws: PropTypes.object.isRequired,
+    socket: PropTypes.object.isRequired,
 }
 
 function Passphrase(props) {
@@ -32,7 +32,7 @@ function Passphrase(props) {
             setPassphrase(newPassphrase);
 
             // send message on ws to update the client
-            props.ws.emit(events.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
+            props.socket.emit(events.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
         }
 
     }, [timeLeft]);

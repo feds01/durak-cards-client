@@ -22,19 +22,19 @@ class WaitingRoom extends Component {
      * within the lobby which is specified by name.
      * */
     onKick(name) {
-        this.props.ws.emit(events.KICK_PLAYER, {name});
+        this.props.socket.emit(events.KICK_PLAYER, {name});
     }
 
 
     render() {
-        const {isHost, id, ws, lobby} = this.props;
+        const {isHost, id, socket, lobby} = this.props;
 
         return (
             <div>
                 <div className={clsx({[styles.Header]: !isHost, [styles.HostHeader]: isHost})}>
                     <h1>Lobby {id}</h1>
                     {isHost && (
-                        <Passphrase ws={ws} timeout={20} passphrase={lobby.passphrase.split("")}/>
+                        <Passphrase socket={socket} timeout={20} passphrase={lobby.passphrase.split("")}/>
                     )}
                 </div>
 

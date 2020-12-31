@@ -10,11 +10,11 @@ const Game = props => {
     const [cards, setCards] = useState([]);
 
     useEffect(() => {
-        props.ws.on("begin_round", (message) => {
+        props.socket.on("begin_round", (message) => {
             setCards(message.cards.deck);
         });
 
-    }, [props.ws]);
+    }, [props.socket]);
 
     return (
         <div>
@@ -28,9 +28,9 @@ const Game = props => {
 };
 
 Game.propTypes = {
-    ws: PropTypes.object.isRequired,
+    socket: PropTypes.object.isRequired,
     isHost: PropTypes.bool.isRequired,
-    id: PropTypes.number.isRequired,
+    pin: PropTypes.number.isRequired,
     lobby: PropTypes.object.isRequired,
 };
 

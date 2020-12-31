@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect} from 'react';
 
 const Card= ({name, ...rest/*size = 16, fill = "#000"*/}) => {
     const [src, setSrc] = useState(null);
