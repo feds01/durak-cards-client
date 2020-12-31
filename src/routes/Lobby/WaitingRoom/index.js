@@ -57,7 +57,7 @@ class WaitingRoom extends Component {
                             onClick={() => {
                                 // emit the 'game_start' event and let all other clients
                                 // begin the 'countdown stage.
-                                ws.emit(events.START_GAME);
+                                socket.emit(events.START_GAME);
                             }}
                             disabled={lobby.players.length < 2}
                             color={'primary'}

@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './index.module.scss';
-import PlayerActions from "../PlayerActions";
+
 import Card from "../Card";
+import PlayerActions from "../PlayerActions";
 
 const CardHolder = props => {
     return (
@@ -14,7 +15,7 @@ const CardHolder = props => {
                     props.cards.map((card, index) => {
                         return (
                             <li key={index} className={styles.Card}>
-                                <Card name={card}/>
+                                <Card value={card} useBackground/>
                             </li>
                         )
                     })

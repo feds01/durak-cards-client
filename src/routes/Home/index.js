@@ -1,5 +1,5 @@
 /**
- * Module description:   src/routes/Home/index.js
+ * Module description:   src/routes/Home/CardImage.js
  *
  * Created on 11/09/2020
  * @author Alexander. E. Fedotov
@@ -15,9 +15,6 @@ import {ReactComponent as PlayingCardIcon} from './../../assets/image/playing-ca
 const HomeRoute = () => {
     const location = useLocation();
 
-    console.log(location);
-    console.log("hello")
-
     return (
         <>
             <div className="App-join">
@@ -28,7 +25,7 @@ const HomeRoute = () => {
                 </div>
             </div>
             <div className={'App-wrapper'}>
-                {/* This is a bit of a hack to render 16 cards without using 16 lines*/}
+                {/* This is a bit of a hack to render 12 cards without using 12 lines*/}
                 {
                     [...Array(12)].map((e, i) => <PlayingCardIcon className={'floating-card'} key={i}/>)
                 }

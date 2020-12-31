@@ -1,38 +1,23 @@
+import clsx from "clsx";
+import React from 'react';
 import PropTypes from 'prop-types';
-import React, {useState, useEffect} from 'react';
+import styles from "./index.module.scss";
+import CardImage from "./CardImage";
 
-const Card= ({name, ...rest/*size = 16, fill = "#000"*/}) => {
-    const [src, setSrc] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        setLoading(true);
-        const importIcon = async () => {
-            try {
-                const {default: namedImport} = await import(`./../../../../assets/cards/${name}.svg`);
-                console.log(namedImport)
-
-                setSrc(namedImport);
-            } catch (err) {
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        };
-        importIcon();
-    }, [name]);
-
-    if (!loading && src !== null) {
-        return <img src={src} alt={name} {...rest}/>;
-    }
-
-    return null;
+const Card = props => {
+    return (
+        <div className={clsx(props.className, styles.Container)}>
+            {props.useBackground && (
+                <CardImage name={props.value}/>
+            )}
+        </div>
+    );
 };
 
 Card.propTypes = {
-    name: PropTypes.string.isRequired,
+    useBackground: PropTypes.bool.isRequired,
+    value: PropTypes.string.isRequired,
     className: PropTypes.string,
-    style: PropTypes.object,
-}
+};
 
 export default Card;

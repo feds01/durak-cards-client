@@ -4,7 +4,6 @@ import styles from "./index.module.scss";
 
 import Table from "./Table";
 import CardHolder from "./CardHolder";
-import PlayerActions from "./PlayerActions";
 
 const Game = props => {
     const [cards, setCards] = useState([]);

@@ -35,7 +35,7 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
         }
 
         return () => mounted = false;
-    }, [valid, order, checking]);
+    }, [valid, order, checking, onError]);
 
     useEffect(() => {
             let mounted = true;
@@ -60,7 +60,7 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
             verifyLobby();
 
             return () => mounted = false;
-        }, [order, pin]
+        }, [order, pin, onSubmit]
     );
 
     return (

@@ -22,6 +22,7 @@ class Prompt extends React.Component {
         }
 
         this.onSubmit = this.onSubmit.bind(this);
+        this.onError = this.onError.bind(this);
     }
 
     async componentDidMount() {
@@ -63,6 +64,14 @@ class Prompt extends React.Component {
         return res;
     }
 
+    onError() {
+        this.setState({
+            name: "",
+            pin: null,
+            stage: "pin"
+        });
+    }
+
     render() {
         const {stage, showStages, name, nodeRef, pin} = this.state;
 
@@ -93,13 +102,7 @@ class Prompt extends React.Component {
                         <GamePassphrase
                             name={name}
                             pin={pin}
-                            onError={() => {
-                                this.setState({
-                                    name: "",
-                                    pin: null,
-                                    stage: "pin"
-                                })
-                            }}
+                            onError={this.onError}
                             onSubmit={this.onSubmit}
                         />
                     </div>

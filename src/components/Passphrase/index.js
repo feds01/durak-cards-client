@@ -35,7 +35,7 @@ function Passphrase(props) {
             props.socket.emit(events.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
         }
 
-    }, [timeLeft]);
+    }, [timeLeft, props.timeout, props.socket]);
 
     return (
         <div className={styles.Passphrase}>

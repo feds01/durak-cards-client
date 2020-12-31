@@ -1,5 +1,5 @@
 /**
- * Module description:   src/routes/Lobby/index.js
+ * Module description:   src/routes/Lobby/CardImage.js
  *
  * Created on 11/09/2020
  * @author Alexander. E. Fedotov
