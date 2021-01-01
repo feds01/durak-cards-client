@@ -16,6 +16,23 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
     const [valid, setValid] = useState("");
     const [checking, setChecking] = useState(false);
 
+
+    // Register key listener to listen for 'esc' character.
+    useEffect(() => {
+        function keyListener(event) {
+            if (event.key === "Escape") {
+                setOrder("");
+            }
+        }
+
+        document.addEventListener("keydown", keyListener);
+
+        return () => {
+            document.removeEventListener("keydown", keyListener);
+        }
+
+    }, []);
+
     // This is used as a reset function when user enters an incorrect security code.
     useEffect(() => {
         let mounted = true;
@@ -31,7 +48,7 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
                         onError();
                     }
                 }
-            }, 2000);
+            }, 1000);
         }
 
         return () => mounted = false;

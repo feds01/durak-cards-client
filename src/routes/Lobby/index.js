@@ -74,7 +74,12 @@ class LobbyRoute extends React.Component {
 
                     // Update our session with the new tokens and the socket query
                     updateTokens(err.data.token, err.data.refreshToken);
-                    socket.query = getAuthTokens();
+
+                    // @Hack: we're manually digging into the query object of the socket and changing
+                    // the query parameters to reflect the new auth tokens. There should be a better way
+                    // of doing this, however it does not seem to be the case.
+                    // Check out issue: https://github.com/socketio/socket.io/issues/1677
+                    socket.io.opts.query = getAuthTokens();
 
                     return socket.connect();
                 }

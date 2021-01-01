@@ -7,7 +7,7 @@ const GameSecurityCard = (props) => {
         <span
             {...(props.style && {style: props.style})}
             className={clsx(styles.Card, {[styles.Selected]: props.selected})}
-            {...(props.onClick && {onClick: props.onClick})}
+            {...((props.onClick && !props.selected) && {onClick: props.onClick})}
         >
             {props.symbol}
         </span>
