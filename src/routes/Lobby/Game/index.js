@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
 import styles from "./index.module.scss";
+import React, {useEffect, useState} from 'react';
 
 import Table from "./Table";
 import CardHolder from "./CardHolder";
@@ -12,16 +12,12 @@ const Game = props => {
         props.socket.on("begin_round", (message) => {
             setCards(message.cards.deck);
         });
-
     }, [props.socket]);
 
     return (
-        <div>
-
-            <div className={styles.GameContainer}>
-                <Table/>
-                <CardHolder cards={cards} />
-            </div>
+        <div className={styles.GameContainer}>
+            <Table/>
+            <CardHolder cards={cards}/>
         </div>
     );
 };

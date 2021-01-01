@@ -66,6 +66,19 @@ class LobbyRoute extends React.Component {
             // message string to determine the next action
             if (err instanceof Error) {
 
+                // Authentication related for refreshing tokens. Essentially invoke a
+                // re-connection; close the socket, update tokens and then re-open the
+                // socket connection with the new tokens.
+                if (err.message === "token") {
+                    socket.close();
+
+                    // Update our session with the new tokens and the socket query
+                    updateTokens(err.data.token, err.data.refreshToken);
+                    socket.query = getAuthTokens();
+
+                    return socket.connect();
+                }
+
                 // if the user is not allowed to join this lobby: re-direct the
                 // user back to the home page from where they can re-try to
                 // join the lobby
@@ -120,20 +133,6 @@ class LobbyRoute extends React.Component {
         socket.onAny((event, ...args) => {
             console.log(event);
         })
-
-        // Authentication related for refreshing tokens. Essentially invoke a
-        // re-connection; close the socket, update tokens and then re-open the
-        // socket connection with the new tokens.
-        socket.on("token", (tokens) => {
-            socket.close();
-
-            // Update our session with the new tokens and the socket query
-            updateTokens(...tokens);
-            socket.query = {...tokens};
-
-            socket.connect();
-        });
-
 
         // set the lobby stage to 'countdown'
         socket.on(events.COUNTDOWN, () => {

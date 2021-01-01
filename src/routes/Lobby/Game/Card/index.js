@@ -8,7 +8,7 @@ const Card = props => {
     return (
         <div className={clsx(props.className, styles.Container)}>
             {props.useBackground && (
-                <CardImage name={props.value}/>
+                <CardImage name={props.value} src={props.src}/>
             )}
         </div>
     );
@@ -17,6 +17,7 @@ const Card = props => {
 Card.propTypes = {
     useBackground: PropTypes.bool.isRequired,
     value: PropTypes.string.isRequired,
+    src: PropTypes.string,
     className: PropTypes.string,
 };
 
