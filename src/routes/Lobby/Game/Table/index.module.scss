@@ -17,5 +17,14 @@
   height: 40vh;
 
   & .Item {
+    border-radius: 12px;
+    border: 1px black solid;
+
+    height: 200px;
+    width: 9em;
+    min-width: 9em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }

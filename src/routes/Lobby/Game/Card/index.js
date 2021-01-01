@@ -21,4 +21,10 @@ Card.propTypes = {
     className: PropTypes.string,
 };
 
+Card.defaultProps = {
+    value: "",
+    src: "",
+    useBackground: false
+}
+
 export default Card;
