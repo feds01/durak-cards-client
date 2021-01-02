@@ -12,7 +12,7 @@ const Player = props => {
 Player.propTypes = {
     cards: PropTypes.number.isRequired,
     isDefending: PropTypes.bool,
-    isAttacking: PropTypes.bool,
+    turned: PropTypes.bool,
 };
 
 export default Player;

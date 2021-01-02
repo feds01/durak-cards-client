@@ -29,7 +29,7 @@ const move = (source, destination, droppableSource, droppableDestination) => {
 };
 
 function canPlaceOnPrevious(index, tableTop) {
-    const values = tableTop.values();
+    const values = Object.values(tableTop);
     let k = 0;
 
     // special case for index of '0'
@@ -64,7 +64,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         }
 
         // check that the tableTop contains a card at the 'pos'
-        if (tableTop[pos].length !== 1) {
+        if (values[pos].length !== 1) {
             return false;
         }
 
@@ -94,9 +94,14 @@ export default class Game extends React.Component {
 
         this.state = {
             cards: [],
-            canPlaceMap: Array.from(Array(6), () => true),
-            tableTop: Object.fromEntries(Array.from({length: 6}, (_, index) => index).map((i) => ([`holder-${i}`, []]))),
+            turned: false,
             isDefending: false,
+            canPlaceMap: Array.from(Array(6), () => true),
+
+            // @@cleanup
+            tableTop: Object.fromEntries(
+                Array.from({length: 6}, (_, index) => index)
+                    .map((i) => ([`holder-${i}`, []]))),
         }
 
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -108,7 +113,7 @@ export default class Game extends React.Component {
 
         this.setState({
             canPlaceMap: Object.keys(this.state.tableTop).map((item, index) => {
-                return canPlaceCard(card.value, index, this.state.tableTop, !this.state.isAttacking, this.state.trumpSuit);
+                return canPlaceCard(card.value, index, this.state.tableTop, this.state.isDefending, this.state.trumpSuit);
             })
         });
     }
@@ -133,7 +138,8 @@ export default class Game extends React.Component {
                         this.state[source.droppableId],
                         source.index,
                         destination.index
-                    )
+                    ),
+                    canPlaceMap: Array.from(Array(6), () => true),
                 });
                 break;
             default:
@@ -174,7 +180,7 @@ export default class Game extends React.Component {
     }
 
     render() {
-        const {cards, isAttacking, canPlaceMap, tableTop} = this.state;
+        const {cards, isDefending, canPlaceMap, tableTop} = this.state;
 
         return (
             <DragDropContext
@@ -182,7 +188,7 @@ export default class Game extends React.Component {
                 onBeforeCapture={this.onBeforeCapture}
             >
                 <div className={styles.GameContainer}>
-                    <Table hand={cards} placeMap={canPlaceMap} tableTop={tableTop} isAttacking={isAttacking}/>
+                    <Table hand={cards} placeMap={canPlaceMap} tableTop={tableTop} isDefending={isDefending}/>
                     <CardHolder cards={cards}/>
                 </div>
             </DragDropContext>

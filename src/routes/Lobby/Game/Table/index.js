@@ -1,17 +1,17 @@
 import clsx from "clsx";
+import React from 'react';
 import PropTypes from 'prop-types';
-import React, {Component} from 'react';
 import styles from "./index.module.scss";
 import {Draggable, Droppable} from "react-beautiful-dnd";
 
 import Card from "../Card";
 
 
-class Table extends Component {
+class Table extends React.Component {
     constructor(props) {
         super(props);
 
-        this.checkForEmptySlots = this.checkForEmptySlots.bind(this);
+        this.checkForFreePreviousSlots = this.checkForFreePreviousSlots.bind(this);
     }
 
 
@@ -20,7 +20,7 @@ class Table extends Component {
      *
      * @param {number} index - The number of the slot to check up to
      * */
-    checkForEmptySlots(index) {
+    checkForFreePreviousSlots(index) {
         const values = Object.values(this.props.tableTop);
         let k = 0;
 
@@ -41,14 +41,14 @@ class Table extends Component {
     }
 
     render() {
-        const {tableTop, isAttacking, placeMap} = this.props;
+        const {tableTop, isDefending, placeMap} = this.props;
 
         return (
             <div className={styles.Container}>
                 <div className={styles.CardGrid}>
                     {
                         Object.values(tableTop).map((item, index) => {
-                            const canPlace = isAttacking && this.checkForEmptySlots(index) && placeMap[index];
+                            const canPlace = !isDefending && this.checkForFreePreviousSlots(index) && placeMap[index];
 
                             return ((item.length === 0 && canPlace) ?
                                     <Droppable
@@ -95,7 +95,7 @@ class Table extends Component {
                                         }}
                                     </Droppable> : (
                                         <div key={index} className={clsx(styles.Item, {
-                                            [styles.BlockHovering]: !placeMap[index] && this.checkForEmptySlots(index),
+                                            [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
                                         })}>
                                             <Card
                                                 // If an item was added to the card holder, use that
@@ -118,6 +118,7 @@ class Table extends Component {
 }
 
 Table.propTypes = {
+    isDefending: PropTypes.bool.isRequired,
     placeMap: PropTypes.arrayOf(PropTypes.bool).isRequired,
     tableTop: PropTypes.object.isRequired,
     hand: PropTypes.arrayOf(PropTypes.string).isRequired,

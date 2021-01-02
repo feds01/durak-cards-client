@@ -27,12 +27,12 @@ class WaitingRoom extends Component {
 
 
     render() {
-        const {isHost, id, socket, lobby} = this.props;
+        const {isHost, pin, socket, lobby} = this.props;
 
         return (
             <div>
                 <div className={clsx({[styles.Header]: !isHost, [styles.HostHeader]: isHost})}>
-                    <h1>Lobby {id}</h1>
+                    <h1>Lobby {pin}</h1>
                     {isHost && (
                         <Passphrase socket={socket} timeout={20} passphrase={lobby.passphrase.split("")}/>
                     )}

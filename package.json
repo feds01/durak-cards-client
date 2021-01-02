@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^12.1.10",
     "clsx": "^1.1.1",
     "formik": "2.2.6",
+    "http-proxy-middleware": "^0.19.1",
     "node-sass": "4.14.1",
     "react": "^17.0.1",
     "react-beautiful-dnd": "^13.0.0",
@@ -46,7 +47,6 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000",
   "devDependencies": {
     "prop-types": "^15.7.2"
   }

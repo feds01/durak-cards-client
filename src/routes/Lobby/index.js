@@ -42,7 +42,10 @@ class LobbyRoute extends React.Component {
         const pin = parseInt(this.props.match.params.pin);
 
         // TODO: move websocket endpoint to config
-        const socket = io(`localhost:5000/${pin}`, {query: getAuthTokens(), transports: ["websocket"]});
+        const socket = io(window.location.protocol + "//" + window.location.hostname + `:5000/${pin}`, {
+            query: getAuthTokens(),
+            transports: ["websocket"]
+        });
 
         // client-side
         socket.on("connect", () => {
