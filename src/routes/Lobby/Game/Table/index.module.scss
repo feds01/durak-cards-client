@@ -10,15 +10,19 @@
 }
 
 .CardGrid {
+  background: #1C3A13;
+  padding: 2em;
+  border-radius: 12px;
+
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-gap: 10px;
   grid-auto-rows: 3fr 3fr;
-  height: 40vh;
+  height: 500px;
 
   & .Item {
     border-radius: 12px;
-    border: 1px black solid;
+    border: 1px transparent solid;
 
     height: 200px;
     width: 9em;
@@ -26,5 +30,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  & .CanPlace {
+    border: 1px white dashed;
+  }
+
+  & .Hovering {
+    border: 2px white solid;
   }
 }

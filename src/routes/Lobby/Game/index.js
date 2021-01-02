@@ -33,7 +33,7 @@ export default class Game extends React.Component {
 
         this.state = {
             cards: [],
-            tableTop: Object.fromEntries(Array.from({length: 6}, (_, index) => index + 1).map((i) => ([`holder-${i}`, []]))),
+            tableTop: Object.fromEntries(Array.from({length: 6}, (_, index) => index).map((i) => ([`holder-${i}`, []]))),
             isDefending: false,
         }
 
@@ -95,12 +95,12 @@ export default class Game extends React.Component {
     }
 
     render() {
-        const {cards, tableTop} = this.state;
+        const {cards, isAttacking, tableTop} = this.state;
 
         return (
             <DragDropContext onDragEnd={this.onDragEnd}>
                 <div className={styles.GameContainer}>
-                    <Table tableTop={tableTop}/>
+                    <Table tableTop={tableTop} isAttacking={isAttacking}/>
                     <CardHolder cards={cards}/>
                 </div>
             </DragDropContext>
