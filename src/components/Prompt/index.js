@@ -108,7 +108,7 @@ class Prompt extends React.Component {
                     }
                 }}/>}
 
-                {showStages && stage === "security" && with2FA && (
+                {stage === "security" && with2FA && (
                     <CSSTransition
                         in={stage === 'security'}
                         nodeRef={nodeRef}
