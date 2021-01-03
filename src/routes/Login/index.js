@@ -20,7 +20,7 @@ const LoginRoute = () => {
 
     return (
         <Formik
-            initialValues={{name: ''}}
+            initialValues={{name: '', password: ''}}
             validateOnChange={false}
             validate={(values) => {
                 const errors = {};

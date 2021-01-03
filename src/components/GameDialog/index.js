@@ -10,6 +10,8 @@ import Typography from "@material-ui/core/Typography";
 
 import MaterialSlider from "../MaterialSlider";
 import {createGame} from "../../utils/networking";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
 
 const GameDialog = (props) => {
     const history = useHistory();
@@ -17,12 +19,10 @@ const GameDialog = (props) => {
     return (
         <Dialog {...props}>
             <Formik
-                initialValues={{roundTimeout: 300, maxPlayers: 2}}
+                initialValues={{roundTimeout: 300, maxPlayers: 2, with2FA: false}}
                 onSubmit={async (values, {setSubmitting}) => {
                     await createGame(values).then((res) => {
                         if (!res.status) {
-                            console.log("failed to create game. Notify...")
-
                             // close the dialog
                             props.onClose();
                         } else {
@@ -37,6 +37,7 @@ const GameDialog = (props) => {
                 {props => {
                     const {
                         values,
+                        handleChange,
                         isSubmitting,
                         handleSubmit,
                     } = props;
@@ -77,6 +78,17 @@ const GameDialog = (props) => {
                                     min={2}
                                     max={8}
                                     valueLabelDisplay="auto"
+                                />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={values.with2FA}
+                                            onChange={handleChange}
+                                            name="with2FA"
+                                            color="primary"
+                                        />
+                                    }
+                                    label="With 2 Factor Authentication"
                                 />
                             </div>
                             <div className={styles.Submit}>

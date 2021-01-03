@@ -2,8 +2,8 @@ import './index.scss';
 import GamePin from "./GamePin";
 import GameName from "./GameName";
 import GamePassphrase from "./GamePassphrase";
+import {updateTokens} from "../../utils/auth";
 import {getLobby, joinLobby} from "../../utils/networking";
-import {updateTokens} from "./../../utils/auth";
 
 import React from 'react';
 import {withRouter} from "react-router";
@@ -15,6 +15,7 @@ class Prompt extends React.Component {
 
         this.state = {
             stage: 'pin',
+            with2FA: false,
             showStages: true,
             pin: null,
             name: "",
@@ -34,6 +35,7 @@ class Prompt extends React.Component {
             await getLobby(this.props.pin).then((res) => {
                 if (res.status) {
                     this.setState({
+                        with2FA: res.data.with2FA,
                         pin: this.props.pin,
                         stage: "name"
                     });
@@ -42,20 +44,32 @@ class Prompt extends React.Component {
         }
     }
 
+    /**
+     * Method that is invoked when the user completes the pin/name entry and
+     * is ready to attempt to join the lobby.
+     *
+     * @param {?String} passphrase - The passphrase for the lobby if the 2 factor auth is
+     *        enabled for the current lobby.
+     * */
     async onSubmit(passphrase) {
-        const credentials = {name: this.state.name, passphrase};
-        const res = await joinLobby(this.state.pin, credentials);
+        const {pin, with2FA, name} = this.state;
+
+        const credentials = {
+            name,
+            ...(with2FA && {passphrase})
+        };
+
+        const res = await joinLobby(pin, credentials);
 
         if (res.status) {
 
             // update our local storage with the tokens
             updateTokens(res.token, res.refreshToken);
 
-            this.props.history.push(`/lobby/${this.state.pin}`);
+            this.props.history.push(`/lobby/${pin}`);
         } else {
             // wait a second to register error message and then re-direct to home page
             await new Promise(resolve => setTimeout(resolve, 1000));
-
             this.props.history.push(`/`);
         }
 
@@ -73,7 +87,7 @@ class Prompt extends React.Component {
     }
 
     render() {
-        const {stage, showStages, name, nodeRef, pin} = this.state;
+        const {stage, showStages, name, with2FA, nodeRef, pin} = this.state;
 
         // Essentially we first render the game pin if the stage is equal to 'pin'. If the 'pin' stage
         // returns a query to progress to the next stage, then we push it to the next stage of 'security'.
@@ -84,29 +98,37 @@ class Prompt extends React.Component {
                 {showStages && stage === 'pin' && <GamePin onSuccess={(pin) => {
                     this.setState({pin: pin, stage: 'name'})
                 }}/>}
-                {showStages && stage === 'name' && <GameName pin={pin} onSuccess={(name) => {
-                    this.setState({name: name, stage: 'security'})
+                {showStages && stage === 'name' && <GameName pin={pin} onSuccess={async (name) => {
+                    this.setState({name});
+
+                    if (!with2FA) {
+                        await this.onSubmit();
+                    } else {
+                        this.setState({stage: 'security'});
+                    }
                 }}/>}
 
-                <CSSTransition
-                    in={stage === 'security'}
-                    nodeRef={nodeRef}
-                    timeout={300}
-                    appear
-                    onEntered={() => this.setState({showStages: false})}
-                    onExited={() => this.setState({showStages: true})}
-                    classNames={'security'}
-                    unmountOnExit
-                >
-                    <div ref={nodeRef}>
-                        <GamePassphrase
-                            name={name}
-                            pin={pin}
-                            onError={this.onError}
-                            onSubmit={this.onSubmit}
-                        />
-                    </div>
-                </CSSTransition>
+                {showStages && stage === "security" && with2FA && (
+                    <CSSTransition
+                        in={stage === 'security'}
+                        nodeRef={nodeRef}
+                        timeout={300}
+                        appear
+                        onEntered={() => this.setState({showStages: false})}
+                        onExited={() => this.setState({showStages: true})}
+                        classNames={'security'}
+                        unmountOnExit
+                    >
+                        <div ref={nodeRef}>
+                            <GamePassphrase
+                                name={name}
+                                pin={pin}
+                                onError={this.onError}
+                                onSubmit={this.onSubmit}
+                            />
+                        </div>
+                    </CSSTransition>
+                )}
             </div>
         );
     }

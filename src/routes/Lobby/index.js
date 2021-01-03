@@ -27,6 +27,7 @@ class LobbyRoute extends React.Component {
             socket: null,
             isHost: false,
             loaded: false,
+            with2FA: false,
             lobby: {},
             error: null,
             stage: game.GameState.WAITING,
