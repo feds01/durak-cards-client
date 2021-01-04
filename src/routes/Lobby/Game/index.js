@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
 
-import {game} from "shared";
+import {game, events} from "shared";
 import Table from "./Table";
 import CardHolder from "./CardHolder";
 
@@ -29,16 +29,15 @@ const move = (source, destination, droppableSource, droppableDestination) => {
 };
 
 function canPlaceOnPrevious(index, tableTop) {
-    const values = Object.values(tableTop);
     let k = 0;
 
     // special case for index of '0'
-    if (index === 0 && values[0].length === 0) {
+    if (index === 0 && tableTop[0].length === 0) {
         return false;
     }
 
     do {
-        if (values[k].length === 0) return true;
+        if (tableTop[k].length === 0) return true;
 
         k++;
     } while (k < index);
@@ -47,8 +46,7 @@ function canPlaceOnPrevious(index, tableTop) {
 }
 
 function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
-    const values = Object.values(tableTop);
-    const allNumerics = new Set(values.flat().map(card => game.parseCard(card.value)[0]));
+    const allNumerics = new Set(tableTop.flat().map(card => game.parseCard(card.value)[0]));
     const [numeric, suit] = game.parseCard(card);
 
     if (isDefending) {
@@ -56,7 +54,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         // special case where defender wants to transfer 'defense' to
         // next player...
         if (!canPlaceOnPrevious(pos, tableTop) &&
-            values.filter(item => item.length > 0).every(item => item.length === 1) &&
+            tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
             allNumerics[0] === numeric
         ) {
@@ -64,11 +62,11 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         }
 
         // check that the tableTop contains a card at the 'pos'
-        if (values[pos].length !== 1) {
+        if (tableTop[pos].length !== 1) {
             return false;
         }
 
-        const [attackingNumeric, attackingSuit] = game.parseCard(values[pos][0].value);
+        const [attackingNumeric, attackingSuit] = game.parseCard(tableTop[pos][0].value);
 
         if (attackingSuit === suit) {
             // The trumping suit doesn't matter here since they are the same
@@ -78,7 +76,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         return suit === trumpSuit;
     } else {
         // check that the tableTop contains a card at the 'pos'
-        if (values[pos].length !== 0) {
+        if (tableTop[pos].length !== 0) {
             return false;
         }
 
@@ -95,25 +93,25 @@ export default class Game extends React.Component {
         this.state = {
             cards: [],
             turned: false,
+            canAttack: false,
             isDefending: false,
             canPlaceMap: Array.from(Array(6), () => true),
-
-            // @@cleanup
-            tableTop: Object.fromEntries(
-                Array.from({length: 6}, (_, index) => index)
-                    .map((i) => ([`holder-${i}`, []]))),
+            tableTop: Array.from(Array(6), () => []),
         }
 
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onBeforeCapture = this.onBeforeCapture.bind(this);
+        this.handleGameStateUpdate = this.handleGameStateUpdate.bind(this);
     }
 
     onBeforeCapture(event) {
-        const card = this.state.cards[parseInt(event.draggableId.split("-")[1])];
+        const {canAttack, isDefending, trumpSuit, tableTop, cards} = this.state;
+
+        const card = cards[parseInt(event.draggableId.split("-")[1])];
 
         this.setState({
-            canPlaceMap: Object.keys(this.state.tableTop).map((item, index) => {
-                return canPlaceCard(card.value, index, this.state.tableTop, this.state.isDefending, this.state.trumpSuit);
+            canPlaceMap: Object.keys(tableTop).map((item, index) => {
+                return canAttack && canPlaceCard(card.value, index, tableTop, isDefending, trumpSuit);
             })
         });
     }
@@ -143,39 +141,75 @@ export default class Game extends React.Component {
                 });
                 break;
             default:
-                // TODO: replace id system with actual map of droppable id's
                 if (destination.droppableId.startsWith("holder-")) {
+
+                    // get the index and check if it currently exists on the table top
+                    const index = parseInt(destination.droppableId.split("-")[1]);
+
+                    // get a copy of the item that just moved
+                    const item = this.state.cards[source.index];
+
                     const result = move(
                         this.state.cards,
-                        this.state.tableTop[destination.droppableId],
+                        this.state.tableTop[index],
                         source,
                         destination
                     )
 
                     const resultantTableTop = this.state.tableTop;
-                    resultantTableTop[destination.droppableId] = result.dest;
+                    resultantTableTop[index] = result.dest;
 
                     this.setState({
                         canPlaceMap: Array.from(Array(6), () => true),
                         cards: result.src,
                         tableTop: resultantTableTop
                     });
+
+                    // emit a socket event to notify that the player has made a move...
+                    this.props.socket.emit(events.MOVE, {type: game.Game.MoveTypes.PLACE, card: item.value})
                 }
 
                 break;
         }
     }
 
-    componentDidMount() {
-        this.props.socket.on("begin_round", (message) => {
-            this.setState({
-                ...message,
+    handleGameStateUpdate(update) {
 
-                // overwrite the card value with a value and an image source...
-                cards: message.cards.map((card) => {
-                    return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
-                })
+        // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards
+        // on the tableTop.
+        const tableTop = Object.entries(update.tableTop).map((cards) => {
+            return cards.filter(card => card !== null).map((card) => {
+                return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
             });
+        });
+
+        for (let index = 0; index < game.Game.DeckSize; index++) {
+            if (typeof tableTop[index] === 'undefined') {
+                tableTop[index] = [];
+            }
+        }
+
+        this.setState({
+            ...update,
+            tableTop: tableTop,
+
+            // overwrite the card value with a value and an image source...
+            cards: update.cards.map((card) => {
+                return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
+            })
+        });
+    }
+
+    componentDidMount() {
+        // Common event for processing any player actions taken...
+        // @@Depreciated this should be removed as the initial state of the game
+        // should be transferred on the 'started_game' event.
+        this.props.socket.on("begin_round", this.handleGameStateUpdate);
+        this.props.socket.on("action", this.handleGameStateUpdate);
+
+
+        // TODO: implement victory screen...
+        this.props.socket.on("victory", (message) => {
         });
     }
 

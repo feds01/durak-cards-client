@@ -21,16 +21,17 @@ class Table extends React.Component {
      * @param {number} index - The number of the slot to check up to
      * */
     checkForFreePreviousSlots(index) {
-        const values = Object.values(this.props.tableTop);
+        const {tableTop} = this.props;
+
         let k = 0;
 
         // special case for index of '0'
-        if (index === 0 && values[0].length === 0) {
+        if (index === 0 && tableTop[0].length === 0) {
             return true;
         }
 
         do {
-            if (values[k].length === 0) {
+            if (tableTop[k].length === 0) {
                 return false;
             }
 
@@ -47,7 +48,7 @@ class Table extends React.Component {
             <div className={styles.Container}>
                 <div className={styles.CardGrid}>
                     {
-                        Object.values(tableTop).map((item, index) => {
+                        tableTop.map((item, index) => {
                             const canPlace = !isDefending && this.checkForFreePreviousSlots(index) && placeMap[index];
 
                             return ((item.length === 0 && canPlace) ?
@@ -120,7 +121,7 @@ class Table extends React.Component {
 Table.propTypes = {
     isDefending: PropTypes.bool.isRequired,
     placeMap: PropTypes.arrayOf(PropTypes.bool).isRequired,
-    tableTop: PropTypes.object.isRequired,
+    tableTop: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
     hand: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
