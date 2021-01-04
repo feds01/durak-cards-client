@@ -6,7 +6,9 @@ import CardImage from "./CardImage";
 
 const Card = props => {
     return (
-        <div className={clsx(props.className, styles.Container)}>
+        <div
+            {...(props.style && {style: props.style})}
+            className={clsx(props.className, styles.Container)}>
             {props.useBackground && (
                 <CardImage name={props.value} src={props.src}/>
             )}
@@ -18,6 +20,7 @@ Card.propTypes = {
     useBackground: PropTypes.bool.isRequired,
     value: PropTypes.string.isRequired,
     src: PropTypes.string,
+    style: PropTypes.object,
     className: PropTypes.string,
 };
 

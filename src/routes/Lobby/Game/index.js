@@ -62,9 +62,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         }
 
         // check that the tableTop contains a card at the 'pos'
-        if (tableTop[pos].length !== 1) {
-            return false;
-        }
+        if (tableTop[pos].length !== 1) return false;
 
         const [attackingNumeric, attackingSuit] = game.parseCard(tableTop[pos][0].value);
 
@@ -73,7 +71,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
             return numeric > attackingNumeric;
         }
 
-        return suit === trumpSuit;
+        return attackingSuit === trumpSuit;
     } else {
         // check that the tableTop contains a card at the 'pos'
         if (tableTop[pos].length !== 0) {
@@ -142,16 +140,17 @@ export default class Game extends React.Component {
                 break;
             default:
                 if (destination.droppableId.startsWith("holder-")) {
+                    const {isDefending, tableTop, cards} = this.state;
 
                     // get the index and check if it currently exists on the table top
                     const index = parseInt(destination.droppableId.split("-")[1]);
 
                     // get a copy of the item that just moved
-                    const item = this.state.cards[source.index];
+                    const item = cards[source.index];
 
                     const result = move(
-                        this.state.cards,
-                        this.state.tableTop[index],
+                        cards,
+                        tableTop[index],
                         source,
                         destination
                     )
@@ -166,7 +165,21 @@ export default class Game extends React.Component {
                     });
 
                     // emit a socket event to notify that the player has made a move...
-                    this.props.socket.emit(events.MOVE, {type: game.Game.MoveTypes.PLACE, card: item.value})
+                    this.props.socket.emit(events.MOVE, {
+
+                        ...(isDefending && {
+                            // handle the case where the player is re-directing the attack vector to the next
+                            //player.
+                            type: result.dest.length === 2 ? game.Game.MoveTypes.COVER : game.Game.MoveTypes.PLACE,
+                            card: item.value,
+                            pos: index,
+                        }),
+
+                        ...(!isDefending && {
+                            type: game.Game.MoveTypes.PLACE,
+                            card: item.value
+                        })
+                    })
                 }
 
                 break;

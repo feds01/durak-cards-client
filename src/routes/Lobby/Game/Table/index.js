@@ -2,9 +2,10 @@ import clsx from "clsx";
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from "./index.module.scss";
-import {Draggable, Droppable} from "react-beautiful-dnd";
 
 import Card from "../Card";
+import AttackingDrop from "./AttackingDrop";
+import DefendingDrop from "./DefendingDrop";
 
 
 class Table extends React.Component {
@@ -49,56 +50,22 @@ class Table extends React.Component {
                 <div className={styles.CardGrid}>
                     {
                         tableTop.map((item, index) => {
-                            const canPlace = !isDefending && this.checkForFreePreviousSlots(index) && placeMap[index];
 
-                            return ((item.length === 0 && canPlace) ?
-                                    <Droppable
-                                        isDropDisabled={item.length !== 0 || !canPlace}
-                                        type={"CARD"} key={index} droppableId={`holder-${index}`}>
-                                        {(provided, snapshot) => {
-                                            return (
-                                                <div
-                                                    {...provided.droppableProps}
-                                                    ref={provided.innerRef}
-                                                    className={clsx(styles.Item, {
-                                                        [styles.Hovering]: canPlace && snapshot.isDraggingOver,
-                                                        [styles.CanPlace]: canPlace,
-                                                    })}
-                                                >
-                                                    {
-                                                        item.length > 0 && (
-                                                            <Draggable
-                                                                isDragDisabled={true}
-                                                                draggableId={`card-holder-${index}`}
-                                                                key={`card-holder-${index}`}
-                                                                index={index}>
-                                                                {(dragProvided, dragSnapshot) => (
-                                                                    <div
-                                                                        {...dragProvided.draggableProps}
-                                                                        ref={dragProvided.innerRef}
-                                                                    >
-                                                                        <Card
-                                                                            // If an item was added to the card holder, use that
-                                                                            // value...
-                                                                            {...(item[0] && {
-                                                                                ...item[0],
-                                                                                useBackground: true
-                                                                            })}
-                                                                        />
-                                                                    </div>
-                                                                )}
-                                                            </Draggable>
-                                                        )
-                                                    }
-                                                    {provided.placeholder}
-                                                </div>
-                                            );
-                                        }}
-                                    </Droppable> : (
+                            // for attacking players:
+                            if (!isDefending) {
+
+                                // render just the card if it's already been placed...
+                                if (item.length > 0) {
+                                    // Make this a component...
+                                    return (
                                         <div key={index} className={clsx(styles.Item, {
                                             [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
                                         })}>
                                             <Card
+                                                style={{
+                                                    position: "absolute",
+                                                    zIndex: 0,
+                                                }}
                                                 // If an item was added to the card holder, use that
                                                 // value...
                                                 {...(item[0] && {
@@ -106,9 +73,82 @@ class Table extends React.Component {
                                                     useBackground: true
                                                 })}
                                             />
+
+                                            {item[1] && (
+                                                <Card
+                                                    style={{
+                                                        zIndex: 1,
+                                                        transform: 'rotate(10deg) translateX(10px)'
+                                                    }}
+                                                    {...item[1]}
+                                                    useBackground
+                                                />
+                                            )}
                                         </div>
-                                    )
-                            );
+                                    );
+                                }
+
+
+                                return <AttackingDrop
+                                    key={index}
+                                    canPlace={this.checkForFreePreviousSlots(index) && placeMap[index]}
+                                    card={item[0]}
+                                    index={index}
+                                />
+                            } else {
+
+                                // The card has already been covered by the player...
+                                if (item.length === 0) {
+                                    // if no cards are currently present on the pile just render a placeholder...
+                                    return (
+                                        <div key={index} className={clsx(styles.Item, {
+                                            [styles.BlockHovering]: !placeMap[index],
+                                        })}>
+                                            <Card/>
+                                        </div>
+                                    );
+                                }
+
+                                if (item.length === 2) {
+                                    return (
+                                        <div key={index} className={clsx(styles.Item, {
+                                            [styles.BlockHovering]: !placeMap[index],
+                                        })}>
+                                            {/*Render the second card here too...*/}
+
+                                            <Card
+                                                style={{
+                                                    position: "absolute",
+                                                    zIndex: 0,
+                                                }}
+                                                // If an item was added to the card holder, use that
+                                                // value...
+
+                                                {...item[0]}
+                                                useBackground
+                                            />
+                                            <Card
+                                                style={{
+                                                    zIndex: 1,
+                                                    transform: 'rotate(10deg) translateX(10px)'
+                                                }}
+                                                // If an item was added to the card holder, use that
+                                                // value...
+                                                {...item[1]}
+                                                useBackground
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                return <DefendingDrop
+                                    key={index}
+                                    canPlace={placeMap[index]}
+                                    card={item[1]}
+                                    bottomCard={item[0]}
+                                    index={index}
+                                />
+                            }
                         })
                     }
                 </div>
