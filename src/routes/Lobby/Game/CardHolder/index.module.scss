@@ -1,4 +1,6 @@
-$gutter: 20px;
+.Holder {
+  width: 100%;
+}
 
 .Container {
   min-height: 225px;
@@ -32,8 +34,4 @@ $gutter: 20px;
   & .Card {
     margin: 0 0.5em;
   }
-}
-
-.Actions {
-  display: none;
 }

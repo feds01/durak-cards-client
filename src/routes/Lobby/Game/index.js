@@ -6,6 +6,7 @@ import {DragDropContext} from "react-beautiful-dnd";
 import {game, events} from "shared";
 import Table from "./Table";
 import CardHolder from "./CardHolder";
+import PlayerActions from "./PlayerActions";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -225,6 +226,7 @@ export default class Game extends React.Component {
 
     render() {
         const {cards, isDefending, canPlaceMap, tableTop} = this.state;
+        const {socket} = this.props;
 
         return (
             <DragDropContext
@@ -233,7 +235,9 @@ export default class Game extends React.Component {
             >
                 <div className={styles.GameContainer}>
                     <Table hand={cards} placeMap={canPlaceMap} tableTop={tableTop} isDefending={isDefending}/>
-                    <CardHolder cards={cards}/>
+                    <CardHolder cards={cards}>
+                        <PlayerActions socket={socket} isDefending={isDefending} />
+                    </CardHolder>
                 </div>
             </DragDropContext>
         );

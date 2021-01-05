@@ -8,15 +8,17 @@ import {BrowserRouter, Route, Switch, Redirect} from 'react-router-dom';
 
 function App() {
     return (
-        <BrowserRouter>
-            <Switch>
-                <Route exact path={'/'} component={HomeRoute}/>
-                <Route exact path={'/login'} component={LoginRoute}/>
-                <Route exact path={'/user'} component={UserRoute}/>
-                <Route exact path={'/lobby/:pin'} component={LobbyRoute}/>
-                <Route render={() => <Redirect to="/"/>}/>
-            </Switch>
-        </BrowserRouter>
+        <>
+            <BrowserRouter>
+                <Switch>
+                    <Route exact path={'/'} component={HomeRoute}/>
+                    <Route exact path={'/login'} component={LoginRoute}/>
+                    <Route exact path={'/user'} component={UserRoute}/>
+                    <Route exact path={'/lobby/:pin'} component={LobbyRoute}/>
+                    <Route render={() => <Redirect to="/"/>}/>
+                </Switch>
+            </BrowserRouter>
+        </>
     );
 }
 
