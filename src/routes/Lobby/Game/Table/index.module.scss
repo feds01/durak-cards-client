@@ -22,7 +22,8 @@
 
   & .Item {
     border-radius: 12px;
-    border: 1px transparent solid;
+    box-sizing: content-box;
+    border: 2px transparent solid;
 
     height: 200px;
     width: 9em;
@@ -33,11 +34,11 @@
   }
 
   & .CanPlace {
-    border: 1px white dashed;
+    border: 2px white dashed;
   }
 
   & .Hovering {
-    border: 2px white solid;
+    border: 2px dodgerblue solid;
   }
 
   & .BlockHovering {

@@ -69,7 +69,7 @@ const DefendingDrop = props => {
 
 DefendingDrop.propTypes = {
     canPlace: PropTypes.bool.isRequired,
-    card: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}).isRequired,
+    card: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}),
     bottomCard: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}).isRequired,
     index: PropTypes.number.isRequired,
 };

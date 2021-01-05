@@ -1,5 +1,5 @@
 import React from 'react';
-import {Formik} from "formik";
+import {Form, Formik} from "formik";
 import Input from "../Input";
 import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
@@ -21,7 +21,7 @@ const GamePin = (props) => {
             onSubmit={async (values, {setSubmitting, setErrors}) => {
                 // make a request to the API to check if there is a game with the given pin,
                 // and if so we'll set the next stage of the prompt (enter the pin).
-               await getLobby(values.pin).then((res) => {
+                await getLobby(values.pin).then((res) => {
                     if (!res.status) {
                         setErrors({pin: res.message});
                     } else {
@@ -41,32 +41,36 @@ const GamePin = (props) => {
                 } = props;
 
                 return (
-                    <div className={'Prompt'}>
-                        <Input
-                            id={'pin'}
-                            placeholder={'Enter game PIN'}
-                            autoFocus
-                            autoComplete={"off"}
-                            error={Boolean(errors.pin)}
-                            helperText={errors.pin || ""}
-                            value={values.pin}
-                            onChange={handleChange}
-                        />
-                        <Button
-                            variant={'contained'}
-                            className={'Prompt-enter'}
-                            disableElevation
-                            style={{
-                                marginTop: 19
-                            }}
-                            disableRipple
-                            disabled={isSubmitting}
-                            onClick={handleSubmit}
-                            color={'primary'}
-                        >
-                            {isSubmitting ? <Loader type="ThreeDots" color="#FFFFFF" height={20} width={40} /> : "Enter"}
-                        </Button>
-                    </div>
+                    <Form>
+                        <div className={'Prompt'}>
+                            <Input
+                                id={'pin'}
+                                placeholder={'Enter game PIN'}
+                                autoFocus
+                                autoComplete={"off"}
+                                error={Boolean(errors.pin)}
+                                helperText={errors.pin || ""}
+                                value={values.pin}
+                                onChange={handleChange}
+                            />
+                            <Button
+                                variant={'contained'}
+                                className={'Prompt-enter'}
+                                disableElevation
+                                style={{
+                                    marginTop: 19
+                                }}
+                                disableRipple
+                                type={"submit"}
+                                disabled={isSubmitting}
+                                onClick={handleSubmit}
+                                color={'primary'}
+                            >
+                                {isSubmitting ?
+                                    <Loader type="ThreeDots" color="#FFFFFF" height={20} width={40}/> : "Enter"}
+                            </Button>
+                        </div>
+                    </Form>
                 );
             }}
         </Formik>

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Formik} from "formik";
+import {Form, Formik} from "formik";
 import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
 import {checkName} from "../../utils/networking";
@@ -41,32 +41,36 @@ const GameName = (props) => {
                 } = props;
 
                 return (
-                    <div className={'Prompt'}>
-                        <Input
-                            id={'name'}
-                            placeholder={'Enter name'}
-                            autoFocus
-                            autoComplete={"off"}
-                            error={Boolean(errors.name)}
-                            helperText={errors.name || ""}
-                            value={values.name}
-                            onChange={handleChange}
-                        />
-                        <Button
-                            variant={'contained'}
-                            className={'Prompt-enter'}
-                            disableElevation
-                            style={{
-                                marginTop: 19
-                            }}
-                            disableRipple
-                            disabled={isSubmitting}
-                            onClick={handleSubmit}
-                            color={'primary'}
-                        >
-                            {isSubmitting ? <Loader type="ThreeDots" color="#FFFFFF" height={20} width={40}/> : "Enter"}
-                        </Button>
-                    </div>
+                    <Form>
+                        <div className={'Prompt'}>
+                            <Input
+                                id={'name'}
+                                placeholder={'Enter name'}
+                                autoFocus
+                                autoComplete={"off"}
+                                error={Boolean(errors.name)}
+                                helperText={errors.name || ""}
+                                value={values.name}
+                                onChange={handleChange}
+                            />
+                            <Button
+                                variant={'contained'}
+                                className={'Prompt-enter'}
+                                disableElevation
+                                style={{
+                                    marginTop: 19
+                                }}
+                                disableRipple
+                                type={"submit"}
+                                disabled={isSubmitting}
+                                onClick={handleSubmit}
+                                color={'primary'}
+                            >
+                                {isSubmitting ?
+                                    <Loader type="ThreeDots" color="#FFFFFF" height={20} width={40}/> : "Enter"}
+                            </Button>
+                        </div>
+                    </Form>
                 );
             }}
         </Formik>

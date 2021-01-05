@@ -7,16 +7,18 @@ import {Draggable, Droppable} from "react-beautiful-dnd";
 import Card from "../Card";
 
 const AttackingDrop = props => {
+    const isDropDisabled = typeof props.card !== "undefined" || !props.canPlace;
+
     return (
         <Droppable
-            isDropDisabled={props.card || !props.canPlace}
-            type={"CARD"} droppableId={`holder-${props.index}`}>
+            isDropDisabled={isDropDisabled}
+            type={isDropDisabled ? "DISABLED" : "CARD"} droppableId={`holder-${props.index}`}>
             {(provided, snapshot) => {
                 return (
                     <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
-                        className={clsx(styles.Item, {
+                        className={clsx(styles.Item, props.className, {
                             [styles.Hovering]: props.canPlace && snapshot.isDraggingOver,
                             [styles.CanPlace]: props.canPlace,
                         })}
@@ -56,7 +58,8 @@ const AttackingDrop = props => {
 
 AttackingDrop.propTypes = {
     canPlace: PropTypes.bool.isRequired,
-    card: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}).isRequired,
+    className: PropTypes.string,
+    card: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}),
     index: PropTypes.number.isRequired,
 };
 

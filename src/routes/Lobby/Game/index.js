@@ -51,12 +51,11 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
 
     if (isDefending) {
 
-        // special case where defender wants to transfer 'defense' to
-        // next player...
+        // special case where defender wants to transfer 'defense' to next player...
         if (!canPlaceOnPrevious(pos, tableTop) &&
             tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
-            allNumerics[0] === numeric
+            allNumerics.has(numeric)
         ) {
             return true;
         }
@@ -103,13 +102,13 @@ export default class Game extends React.Component {
     }
 
     onBeforeCapture(event) {
-        const {canAttack, isDefending, trumpSuit, tableTop, cards} = this.state;
+        const {isDefending, trumpSuit, tableTop, cards} = this.state;
 
         const card = cards[parseInt(event.draggableId.split("-")[1])];
 
         this.setState({
             canPlaceMap: Object.keys(tableTop).map((item, index) => {
-                return canAttack && canPlaceCard(card.value, index, tableTop, isDefending, trumpSuit);
+                return canPlaceCard(card.value, index, tableTop, isDefending, trumpSuit);
             })
         });
     }
@@ -120,11 +119,9 @@ export default class Game extends React.Component {
         // dropped outside the list
         if (!destination) {
             // reset the canPlaceMap for new cards
-            this.setState({
+            return this.setState({
                 canPlaceMap: Array.from(Array(6), () => true),
             });
-
-            return;
         }
 
         switch (source.droppableId) {
@@ -187,7 +184,6 @@ export default class Game extends React.Component {
     }
 
     handleGameStateUpdate(update) {
-
         // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards
         // on the tableTop.
         const tableTop = Object.entries(update.tableTop).map((cards) => {
@@ -218,7 +214,8 @@ export default class Game extends React.Component {
         // @@Depreciated this should be removed as the initial state of the game
         // should be transferred on the 'started_game' event.
         this.props.socket.on("begin_round", this.handleGameStateUpdate);
-        this.props.socket.on("action", this.handleGameStateUpdate);
+        this.props.socket.on(events.ACTION, this.handleGameStateUpdate);
+        this.props.socket.on(events.INVALID_MOVE, this.handleGameStateUpdate);
 
 
         // TODO: implement victory screen...

@@ -56,18 +56,22 @@ class Table extends React.Component {
 
                                 // render just the card if it's already been placed...
                                 if (item.length > 0) {
-                                    // Make this a component...
+                                    const showBlocking = !placeMap[index] && item.length === 1 && this.checkForFreePreviousSlots(index);
+
                                     return (
-                                        <div key={index} className={clsx(styles.Item, {
-                                            [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
-                                        })}>
+                                        <div key={index}
+                                             style={{
+                                                 // move to a class
+                                                 marginRight: item.length === 2 ? 20 : 0
+                                             }}
+                                             className={clsx(styles.Item, {
+                                                 [styles.BlockHovering]: showBlocking,
+                                             })}>
                                             <Card
                                                 style={{
                                                     position: "absolute",
                                                     zIndex: 0,
                                                 }}
-                                                // If an item was added to the card holder, use that
-                                                // value...
                                                 {...(item[0] && {
                                                     ...item[0],
                                                     useBackground: true
@@ -88,21 +92,40 @@ class Table extends React.Component {
                                     );
                                 }
 
-
-                                return <AttackingDrop
-                                    key={index}
-                                    canPlace={this.checkForFreePreviousSlots(index) && placeMap[index]}
-                                    card={item[0]}
-                                    index={index}
-                                />
+                                return (
+                                    <AttackingDrop
+                                        key={index}
+                                        canPlace={this.checkForFreePreviousSlots(index) && placeMap[index]}
+                                        className={clsx({
+                                            [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
+                                        })}
+                                        card={item[0]}
+                                        index={index}
+                                    />
+                                );
                             } else {
-
                                 // The card has already been covered by the player...
                                 if (item.length === 0) {
+
+                                    // edge case where defending player can re-direct the attack...
+                                    if (placeMap[index] && index !== 0) {
+                                        return (
+                                            <AttackingDrop
+                                                key={index}
+                                                canPlace={this.checkForFreePreviousSlots(index)}
+                                                className={clsx({
+                                                    [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
+                                                })}
+                                                card={item[0]}
+                                                index={index}
+                                            />
+                                        );
+                                    }
+
                                     // if no cards are currently present on the pile just render a placeholder...
                                     return (
                                         <div key={index} className={clsx(styles.Item, {
-                                            [styles.BlockHovering]: !placeMap[index],
+                                            [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
                                         })}>
                                             <Card/>
                                         </div>
@@ -111,19 +134,17 @@ class Table extends React.Component {
 
                                 if (item.length === 2) {
                                     return (
-                                        <div key={index} className={clsx(styles.Item, {
-                                            [styles.BlockHovering]: !placeMap[index],
-                                        })}>
-                                            {/*Render the second card here too...*/}
-
+                                        <div
+                                            key={index}
+                                            style={{
+                                                marginRight: 20,
+                                            }}
+                                        >
                                             <Card
                                                 style={{
                                                     position: "absolute",
                                                     zIndex: 0,
                                                 }}
-                                                // If an item was added to the card holder, use that
-                                                // value...
-
                                                 {...item[0]}
                                                 useBackground
                                             />
@@ -132,8 +153,6 @@ class Table extends React.Component {
                                                     zIndex: 1,
                                                     transform: 'rotate(10deg) translateX(10px)'
                                                 }}
-                                                // If an item was added to the card holder, use that
-                                                // value...
                                                 {...item[1]}
                                                 useBackground
                                             />
@@ -161,8 +180,11 @@ class Table extends React.Component {
 Table.propTypes = {
     isDefending: PropTypes.bool.isRequired,
     placeMap: PropTypes.arrayOf(PropTypes.bool).isRequired,
-    tableTop: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)).isRequired,
-    hand: PropTypes.arrayOf(PropTypes.string).isRequired,
+    tableTop: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({
+        src: PropTypes.string,
+        value: PropTypes.string
+    }))).isRequired,
+    hand: PropTypes.arrayOf(PropTypes.shape({src: PropTypes.string, value: PropTypes.string})).isRequired,
 };
 
 Table.defaultProps = {
