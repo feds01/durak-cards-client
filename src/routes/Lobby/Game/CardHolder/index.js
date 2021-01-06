@@ -24,8 +24,7 @@ const CardHolder = props => {
                     isCombineEnabled={false}
                 >
                     {dropProvided => (
-                        <div {...dropProvided.droppableProps}>
-                            <ul className={styles.Cards} ref={dropProvided.innerRef}>
+                        <div className={styles.Cards} {...dropProvided.droppableProps} ref={dropProvided.innerRef}>
                                 {
                                     cards.map((item, index) => {
                                         return (
@@ -46,7 +45,6 @@ const CardHolder = props => {
                                     })
                                 }
                                 {dropProvided.placeholder}
-                            </ul>
                         </div>
                     )}
                 </Droppable>

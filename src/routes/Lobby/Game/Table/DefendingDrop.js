@@ -17,7 +17,7 @@ const DefendingDrop = props => {
                         ref={provided.innerRef}
                         className={clsx(styles.Item, {
                             [styles.Hovering]: props.canPlace && snapshot.isDraggingOver,
-                            [styles.CanPlace]: props.canPlace,
+                            [styles.BlockHovering]: !props.canPlace,
                         })}
                     >
                         <Card

@@ -48,7 +48,7 @@ function canPlaceOnPrevious(index, tableTop) {
 
 function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
     const allNumerics = new Set(tableTop.flat().map(card => game.parseCard(card.value)[0]));
-    const [numeric, suit] = game.parseCard(card);
+    const [attackingNumeric, attackingSuit] = game.parseCard(card);
 
     if (isDefending) {
 
@@ -56,7 +56,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         if (!canPlaceOnPrevious(pos, tableTop) &&
             tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
-            allNumerics.has(numeric)
+            allNumerics.has(attackingNumeric)
         ) {
             return true;
         }
@@ -64,11 +64,11 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         // check that the tableTop contains a card at the 'pos'
         if (tableTop[pos].length !== 1) return false;
 
-        const [attackingNumeric, attackingSuit] = game.parseCard(tableTop[pos][0].value);
+        const [numeric, suit] = game.parseCard(tableTop[pos][0].value);
 
         if (attackingSuit === suit) {
             // The trumping suit doesn't matter here since they are the same
-            return numeric > attackingNumeric;
+            return numeric < attackingNumeric;
         }
 
         return attackingSuit === trumpSuit;
@@ -79,7 +79,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         }
 
         // special case where the number of cards is zero.
-        return allNumerics.size === 0 || allNumerics.has(numeric);
+        return allNumerics.size === 0 || allNumerics.has(attackingNumeric);
     }
 }
 
