@@ -8,7 +8,7 @@
 
 import React from "react";
 import {io} from "socket.io-client";
-import {withRouter} from "react-router";
+import {Prompt, withRouter} from "react-router";
 
 
 import Game from "./Game";
@@ -23,6 +23,7 @@ class LobbyRoute extends React.Component {
         super(props);
 
         this.state = {
+            shouldBlockNavigation: false,
             pin: null,
             socket: null,
             isHost: false,
@@ -34,12 +35,19 @@ class LobbyRoute extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
+
         // if the id does not match hello a 6 digit pin, then re-direct the user to home page..
         if (!this.props.match.params.pin.match(/^\d{6}$/g)) {
             this.props.history.push("/");
+        } else {
+            this.setState({shouldBlockNavigation: true});
         }
 
-        const pin = parseInt(this.props.match.params.pin);
+        // prevent the user from accidentally navigating off the page...
+        window.onbeforeunload = () => true;
+
+        const pin = this.props.match.params.pin;
 
         // TODO: move websocket endpoint to config
         const socket = io(window.location.protocol + "//" + window.location.hostname + `:5000/${pin}`, {
@@ -56,6 +64,10 @@ class LobbyRoute extends React.Component {
         // The server disconnected us for some reason... re-direct back to home page and
         // clear the session so the user isn't using stale JWTs
         socket.on("close", (event) => {
+            // disable the 'navigation prompt' from alerting the user
+            // since a navigation might occur based on the error type.
+            this.setState({shouldBlockNavigation: false});
+
             if (event.reason === "kicked") {
                 sessionStorage.clear();
                 this.props.history.push("/");
@@ -63,6 +75,10 @@ class LobbyRoute extends React.Component {
         });
 
         socket.on("connect_error", err => {
+
+            // disable the 'navigation prompt' from alerting the user
+            // since a navigation might occur based on the error type.
+            this.setState({shouldBlockNavigation: false});
 
             // ensure that the transmitted 'connection_error' is an
             // error object from the server, then use the connection
@@ -107,9 +123,10 @@ class LobbyRoute extends React.Component {
                 }
             }
 
-            console.log(err instanceof Error); // true
-            console.log(err.message); // not authorized
-            console.log(err.data); // { content: "Please retry later" }
+            // re-enable the accidental navigation prevention prompt.
+            if (this._isMounted) {
+                this.setState({shouldBlockNavigation: true});
+            }
         });
 
 
@@ -138,10 +155,6 @@ class LobbyRoute extends React.Component {
             });
         });
 
-        socket.onAny((event, ...args) => {
-            console.log(event);
-        })
-
         // set the lobby stage to 'countdown'
         socket.on(events.COUNTDOWN, () => {
             this.setState({stage: game.GameState.STARTED});
@@ -155,27 +168,49 @@ class LobbyRoute extends React.Component {
         this.setState({socket, pin});
     }
 
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if (nextState.shouldBlockNavigation) {
+            window.onbeforeunload = () => true;
+        } else {
+            window.onbeforeunload = undefined;
+        }
+
+        return true;
+    }
+
     componentWillUnmount() {
+        this._isMounted = false;
+
         // disconnect the socket if a connection was established.
         if (this.state.socket !== null) {
             this.state.socket.disconnect();
         }
+
+        // reset the onbeforeunload function since we don't need it if the user
+        // redirects.
+        window.onbeforeunload = undefined;
     }
 
     render() {
-        const {loaded, stage} = this.state;
+        const {loaded, stage, shouldBlockNavigation} = this.state;
 
-        if (!loaded) {
-            return <LoadingScreen><b>Joining Lobby...</b></LoadingScreen>
-        } else {
-            return (
-                <>
-                    {stage === game.GameState.WAITING && <WaitingRoom {...this.state} />}
-                    {stage === game.GameState.STARTED && <CountDown/>}
-                    {stage === game.GameState.PLAYING && <Game {...this.state} />}
-                </>
-            );
-        }
+        return (
+            <>
+                <Prompt
+                    when={shouldBlockNavigation}
+                    message={`You can't rejoin the game if you leave, are you sure you want to leave?`}
+                />
+                {loaded ? (
+                    <>
+                        {stage === game.GameState.WAITING && <WaitingRoom {...this.state} />}
+                        {stage === game.GameState.STARTED && <CountDown/>}
+                        {stage === game.GameState.PLAYING && <Game {...this.state} />}
+                    </>
+                ) : (
+                    <LoadingScreen><b>Joining Lobby...</b></LoadingScreen>
+                )}
+            </>
+        )
     }
 }
 

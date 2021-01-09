@@ -4,16 +4,26 @@
   flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
+  font-family: 'Cabin', sans-serif;
 
   line-height: 24px;
   font-size: 100%;
   padding: 0.3em;
 
+  & button {
+    font-family: 'Cabin', sans-serif !important;
+  }
+
   & .Status {
     display: inline-flex;
+    border-radius: 4px;
+    background: #e0e0e0;
+    color: rgba(0, 0, 0, 0.87);
+    padding: 6px 16px;
 
     & svg {
-      margin-left: 8px;
+      margin-left: -4px;
+      margin-right: 8px;
       width: 24px;
       height: 24px;
     }

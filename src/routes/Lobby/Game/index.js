@@ -89,7 +89,7 @@ export default class Game extends React.Component {
         super(props)
 
         this.state = {
-            cards: [],
+            deck: [],
             turned: false,
             canAttack: false,
             isDefending: false,
@@ -103,13 +103,13 @@ export default class Game extends React.Component {
     }
 
     onBeforeCapture(event) {
-        const {isDefending, trumpSuit, tableTop, cards} = this.state;
+        const {isDefending, trumpCard, tableTop, deck} = this.state;
 
-        const card = cards[parseInt(event.draggableId.split("-")[1])];
+        const card = deck[parseInt(event.draggableId.split("-")[1])];
 
         this.setState({
             canPlaceMap: Object.keys(tableTop).map((item, index) => {
-                return canPlaceCard(card.value, index, tableTop, isDefending, trumpSuit);
+                return canPlaceCard(card.value, index, tableTop, isDefending, trumpCard.suit);
             })
         });
     }
@@ -128,8 +128,8 @@ export default class Game extends React.Component {
         switch (source.droppableId) {
             case destination.droppableId:
                 this.setState({
-                    [destination.droppableId]: reorder(
-                        this.state[source.droppableId],
+                    deck: reorder(
+                        this.state.deck,
                         source.index,
                         destination.index
                     ),
@@ -138,16 +138,16 @@ export default class Game extends React.Component {
                 break;
             default:
                 if (destination.droppableId.startsWith("holder-")) {
-                    const {isDefending, tableTop, cards} = this.state;
+                    const {isDefending, tableTop, deck} = this.state;
 
                     // get the index and check if it currently exists on the table top
                     const index = parseInt(destination.droppableId.split("-")[1]);
 
                     // get a copy of the item that just moved
-                    const item = cards[source.index];
+                    const item = deck[source.index];
 
                     const result = move(
-                        cards,
+                        deck,
                         tableTop[index],
                         source,
                         destination
@@ -158,13 +158,12 @@ export default class Game extends React.Component {
 
                     this.setState({
                         canPlaceMap: Array.from(Array(6), () => true),
-                        cards: result.src,
+                        deck: result.src,
                         tableTop: resultantTableTop
                     });
 
                     // emit a socket event to notify that the player has made a move...
                     this.props.socket.emit(events.MOVE, {
-
                         ...(isDefending && {
                             // handle the case where the player is re-directing the attack vector to the next
                             //player.
@@ -204,7 +203,7 @@ export default class Game extends React.Component {
             tableTop: tableTop,
 
             // overwrite the card value with a value and an image source...
-            cards: update.cards.map((card) => {
+            deck: update.deck.map((card) => {
                 return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
             })
         });
@@ -225,8 +224,8 @@ export default class Game extends React.Component {
     }
 
     render() {
-        const {cards, isDefending, canPlaceMap, tableTop} = this.state;
         const {socket} = this.props;
+        const {deck, isDefending, canPlaceMap, tableTop} = this.state;
 
         return (
             <DragDropContext
@@ -234,9 +233,13 @@ export default class Game extends React.Component {
                 onBeforeCapture={this.onBeforeCapture}
             >
                 <div className={styles.GameContainer}>
-                    <Table hand={cards} placeMap={canPlaceMap} tableTop={tableTop} isDefending={isDefending}/>
-                    <CardHolder cards={cards}>
-                        <PlayerActions socket={socket} isDefending={isDefending} />
+                    <Table hand={deck} placeMap={canPlaceMap} tableTop={tableTop} isDefending={isDefending}/>
+                    <CardHolder cards={deck}>
+                        <PlayerActions
+                            socket={socket}
+                            statusText={isDefending ? "DEFENDING" : "ATTACKING"}
+                            isDefending={isDefending}
+                        />
                     </CardHolder>
                 </div>
             </DragDropContext>
