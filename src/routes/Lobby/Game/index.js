@@ -93,6 +93,7 @@ export default class Game extends React.Component {
         this.state = {
             deck: [],
             turned: false,
+            out: false,
             canAttack: false,
             isDefending: false,
             canPlaceMap: Array.from(Array(6), () => true),
@@ -118,7 +119,7 @@ export default class Game extends React.Component {
             return false;
         }
 
-        return !this.state.turned;
+        return !this.state.turned && !this.state.out;
     }
 
     onBeforeCapture(event) {
@@ -244,7 +245,7 @@ export default class Game extends React.Component {
 
     render() {
         const {socket} = this.props;
-        const {deck, deckSize, isDefending, trumpCard, canPlaceMap, tableTop} = this.state;
+        const {deck, out, deckSize, isDefending, trumpCard, canPlaceMap, tableTop} = this.state;
 
         return (
             <DragDropContext
@@ -265,11 +266,11 @@ export default class Game extends React.Component {
                         <Deck count={deckSize} trumpCard={trumpCard}/>
                     </Table>
                     <div className={styles.PlayerRight}>right player container</div>
-                    <CardHolder cards={deck} className={styles.GameFooter}>
+                   <CardHolder cards={deck} className={styles.GameFooter}>
                         <PlayerActions
                             socket={socket}
+                            out={out}
                             canForfeit={this.canForfeit()}
-                            statusText={isDefending ? "DEFENDING" : "ATTACKING"}
                             isDefending={isDefending}
                         />
                     </CardHolder>
