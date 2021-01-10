@@ -99,9 +99,26 @@ export default class Game extends React.Component {
             tableTop: Array.from(Array(6), () => []),
         }
 
+        // game actions
+        this.canForfeit = this.canForfeit.bind(this);
+
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onBeforeCapture = this.onBeforeCapture.bind(this);
         this.handleGameStateUpdate = this.handleGameStateUpdate.bind(this);
+    }
+
+    /**
+     * Method to determine if a player can invoke a 'forfeit' action for the current
+     * game state.
+     * */
+    canForfeit() {
+
+        // player cannot skip if no cards are present on the table top.
+        if (this.state.tableTop.flat().length === 0) {
+            return false;
+        }
+
+        return !this.state.turned;
     }
 
     onBeforeCapture(event) {
@@ -251,6 +268,7 @@ export default class Game extends React.Component {
                     <CardHolder cards={deck} className={styles.GameFooter}>
                         <PlayerActions
                             socket={socket}
+                            canForfeit={this.canForfeit()}
                             statusText={isDefending ? "DEFENDING" : "ATTACKING"}
                             isDefending={isDefending}
                         />

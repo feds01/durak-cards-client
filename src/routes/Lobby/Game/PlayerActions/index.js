@@ -9,8 +9,6 @@ import {ReactComponent as Shield} from "./../../../../assets/icons/shield.svg";
 import {ReactComponent as Swords} from "./../../../../assets/icons/swords.svg";
 
 const PlayerActions = props => {
-
-
     function sendForfeit() {
         props.socket.emit(events.MOVE, {
             type: game.Game.MoveTypes.FORFEIT,
@@ -22,7 +20,7 @@ const PlayerActions = props => {
             <Button
                 variant="contained"
                 onClick={sendForfeit}
-                disabled={props.canForfeit}
+                disabled={!props.canForfeit}
                 endIcon={<ClearIcon/>}
             >
                 skip
@@ -41,7 +39,7 @@ PlayerActions.propTypes = {
     actionName: PropTypes.string.isRequired,
     statusText: PropTypes.string.isRequired,
     isDefending: PropTypes.bool.isRequired,
-    canForfeit: PropTypes.bool.isRequired,
+    canForfeit: PropTypes.func.isRequired,
     socket: PropTypes.object.isRequired,
 };
 
