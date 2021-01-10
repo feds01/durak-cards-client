@@ -8,20 +8,22 @@ const Deck = props => {
     return (
         <div className={clsx(props.className)}>
             <Card
-                className={styles.TrumpCard}
+                className={clsx({
+                    [styles.TrumpCard]: props.count > 1,
+                    [styles.TopCard]: props.count <= 1,
+                })}
                 value={props.trumpCard.card}
                 src={process.env.PUBLIC_URL + `/cards/${props.trumpCard.card}.svg`}
                 useBackground
             />
-            {
-                props.count > 1 && (
-                    <Card
-                        className={styles.TopCard}
-                        src={process.env.PUBLIC_URL + `/cards/back.svg`}
-                        useBackground
-                    />
-                )
-            }
+
+            {props.count > 1 && (
+                <Card
+                    className={styles.TopCard}
+                    src={process.env.PUBLIC_URL + `/cards/back.svg`}
+                    useBackground
+                />
+            )}
         </div>
     );
 };
@@ -29,7 +31,7 @@ const Deck = props => {
 Deck.propTypes = {
     className: PropTypes.string,
     count: PropTypes.number.isRequired,
-    trumpCard: PropTypes.shape({value: PropTypes.string, suit: PropTypes.string, card: PropTypes.string}).isRequired,
+    trumpCard: PropTypes.shape({value: PropTypes.number, suit: PropTypes.string, card: PropTypes.string}).isRequired,
 };
 
 Deck.defaultProps = {
