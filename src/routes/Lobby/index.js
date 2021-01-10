@@ -68,10 +68,8 @@ class LobbyRoute extends React.Component {
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
 
-            if (event.reason === "kicked") {
-                sessionStorage.clear();
-                this.props.history.push("/");
-            }
+            sessionStorage.clear();
+            this.props.history.push("/");
         });
 
         socket.on("connect_error", err => {
