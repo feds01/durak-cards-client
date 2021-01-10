@@ -46,7 +46,7 @@ class Table extends React.Component {
         const {tableTop, isDefending, placeMap} = this.props;
 
         return (
-            <div className={styles.Container}>
+            <div className={clsx(this.props.className, styles.Container)}>
                 <div className={styles.CardGrid}>
                     {
                         tableTop.map((item, index) => {
@@ -178,6 +178,7 @@ class Table extends React.Component {
 }
 
 Table.propTypes = {
+    className: PropTypes.string,
     isDefending: PropTypes.bool.isRequired,
     placeMap: PropTypes.arrayOf(PropTypes.bool).isRequired,
     tableTop: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({

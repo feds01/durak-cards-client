@@ -7,6 +7,8 @@ import {game, events} from "shared";
 import Table from "./Table";
 import CardHolder from "./CardHolder";
 import PlayerActions from "./PlayerActions";
+import Header from "./Header";
+import Deck from "./Deck";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -233,8 +235,20 @@ export default class Game extends React.Component {
                 onBeforeCapture={this.onBeforeCapture}
             >
                 <div className={styles.GameContainer}>
-                    <Table hand={deck} placeMap={canPlaceMap} tableTop={tableTop} isDefending={isDefending}/>
-                    <CardHolder cards={deck}>
+                    <Header className={styles.GameHeader}/>
+                    <div className={styles.PlayerTop}>top</div>
+                    <div className={styles.PlayerLeft}>left</div>
+                    <Table
+                        className={styles.GameTable}
+                        hand={deck}
+                        placeMap={canPlaceMap}
+                        tableTop={tableTop}
+                        isDefending={isDefending}
+                    >
+                        <Deck/>
+                    </Table>
+                    <div className={styles.PlayerRight}>right</div>
+                    <CardHolder cards={deck} className={styles.GameFooter}>
                         <PlayerActions
                             socket={socket}
                             statusText={isDefending ? "DEFENDING" : "ATTACKING"}

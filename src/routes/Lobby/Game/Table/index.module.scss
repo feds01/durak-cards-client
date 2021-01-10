@@ -10,10 +10,6 @@
 }
 
 .CardGrid {
-  background: #1C3A13;
-  padding: 2em;
-  border-radius: 12px;
-
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-gap: 10px;

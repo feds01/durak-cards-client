@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import clsx from "clsx";
 import PropTypes from 'prop-types';
 import styles from './index.module.scss';
+import React, {useEffect, useState} from 'react';
+import {Draggable, Droppable} from "react-beautiful-dnd";
 
 import Card from "../Card";
-import {Draggable, Droppable} from "react-beautiful-dnd";
 
 
 const CardHolder = props => {
@@ -14,7 +15,7 @@ const CardHolder = props => {
     }, [props.cards]);
 
     return (
-        <div className={styles.Holder}>
+        <div className={clsx(props.className, styles.Holder)}>
             {props.children}
             <div className={styles.Container}>
                 <Droppable
@@ -54,6 +55,7 @@ const CardHolder = props => {
 };
 
 CardHolder.propTypes = {
+    className: PropTypes.string,
     cards: PropTypes.arrayOf(PropTypes.shape({value: PropTypes.string, src: PropTypes.string})).isRequired
 };
 
