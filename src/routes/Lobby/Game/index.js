@@ -227,7 +227,7 @@ export default class Game extends React.Component {
 
     render() {
         const {socket} = this.props;
-        const {deck, isDefending, canPlaceMap, tableTop} = this.state;
+        const {deck, deckSize, isDefending, trumpCard, canPlaceMap, tableTop} = this.state;
 
         return (
             <DragDropContext
@@ -236,8 +236,8 @@ export default class Game extends React.Component {
             >
                 <div className={styles.GameContainer}>
                     <Header className={styles.GameHeader}/>
-                    <div className={styles.PlayerTop}>top</div>
-                    <div className={styles.PlayerLeft}>left</div>
+                    <div className={styles.PlayerTop}>top player container</div>
+                    <div className={styles.PlayerLeft}>left player container</div>
                     <Table
                         className={styles.GameTable}
                         hand={deck}
@@ -245,9 +245,9 @@ export default class Game extends React.Component {
                         tableTop={tableTop}
                         isDefending={isDefending}
                     >
-                        <Deck/>
+                        <Deck count={deckSize} trumpCard={trumpCard}/>
                     </Table>
-                    <div className={styles.PlayerRight}>right</div>
+                    <div className={styles.PlayerRight}>right player container</div>
                     <CardHolder cards={deck} className={styles.GameFooter}>
                         <PlayerActions
                             socket={socket}

@@ -171,7 +171,9 @@ class Table extends React.Component {
                         })
                     }
                 </div>
-
+                <div className={styles.Deck}>
+                    {this.props.children}
+                </div>
             </div>
         );
     }

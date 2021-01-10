@@ -1,3 +1,12 @@
-.Container {
+.TrumpCard {
+  cursor: auto;
+  position: absolute;
+  z-index: 0;
+  transform: rotate(90deg) translateY(40px);
+}
 
+.TopCard {
+  cursor: auto;
+  position: relative;
+  z-index: 1;
 }

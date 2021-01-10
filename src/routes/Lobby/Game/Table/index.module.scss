@@ -2,19 +2,20 @@
   flex-grow: 1;
   flex-shrink: 0;
   width: 100%;
+  padding: 1em;
 
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  flex-direction: row;
+  justify-content: flex-start;
 }
 
 .CardGrid {
+  flex-grow: 1;
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-gap: 10px;
   grid-auto-rows: 3fr 3fr;
-  height: 500px;
+  height: 100%;
 
   & .Item {
     border-radius: 12px;
@@ -40,4 +41,12 @@
   & .BlockHovering {
     border: 2px lightcoral solid;
   }
+}
+
+.Deck {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: flex-end;
+  justify-content: flex-end;
 }

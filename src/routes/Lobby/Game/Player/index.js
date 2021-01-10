@@ -10,6 +10,7 @@ const Player = props => {
 };
 
 Player.propTypes = {
+    name: PropTypes.string.isRequired,
     cards: PropTypes.number.isRequired,
     isDefending: PropTypes.bool,
     turned: PropTypes.bool,
