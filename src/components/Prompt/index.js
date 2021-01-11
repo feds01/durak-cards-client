@@ -8,6 +8,7 @@ import {getLobby, joinLobby} from "../../utils/networking";
 import React from 'react';
 import {withRouter} from "react-router";
 import {CSSTransition} from 'react-transition-group';
+import clsx from "clsx";
 
 class Prompt extends React.Component {
     constructor(props) {
@@ -94,7 +95,7 @@ class Prompt extends React.Component {
         // The next stage requires the user to enter a admin provided game code to finalise the entry into
         // the lobby.
         return (
-            <div>
+            <div className={clsx(this.props.className)}>
                 {showStages && stage === 'pin' && <GamePin onSuccess={(pin) => {
                     this.setState({pin: pin, stage: 'name'})
                 }}/>}

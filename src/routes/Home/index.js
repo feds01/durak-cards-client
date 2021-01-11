@@ -7,9 +7,10 @@
  */
 
 import React from "react";
-import {useLocation} from "react-router";
+import styles from "./index.module.scss";
 import Logo from "../../components/Logo";
 import Prompt from "../../components/Prompt";
+import {Link, useLocation} from "react-router-dom";
 import {ReactComponent as PlayingCardIcon} from './../../assets/image/playing-card.svg';
 
 const HomeRoute = () => {
@@ -17,17 +18,18 @@ const HomeRoute = () => {
 
     return (
         <>
-            <div className="App-join">
+            <div className={styles.Container}>
                 <Logo size={64}/>
-                <br/>
-                <div className={'App-join-prompt'}>
-                    <Prompt {...(location?.state?.pin && {pin: location.state.pin})}/>
-                </div>
+                <Prompt
+                    className={styles.Prompt}
+                    {...(location?.state?.pin && {pin: location.state.pin})}
+                />
+                <p>Got an account? Login <Link to={"/login"}>here</Link></p>
             </div>
-            <div className={'App-wrapper'}>
+            <div className={styles.Wrapper}>
                 {/* This is a bit of a hack to render 12 cards without using 12 lines*/}
                 {
-                    [...Array(12)].map((e, i) => <PlayingCardIcon className={'floating-card'} key={i}/>)
+                    [...Array(12)].map((e, i) => <PlayingCardIcon className={styles.floatingCard} key={i}/>)
                 }
             </div>
         </>

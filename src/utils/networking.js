@@ -29,6 +29,18 @@ export async function login(name, password) {
     }).then(res => res.json());
 }
 
+export async function register(email, name, password) {
+    const payload = JSON.stringify({email, name, password});
+
+    return await fetch(`/api/user/register`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: payload
+    }).then(res => res.json());
+}
+
 
 export async function deleteGame(pin) {
     return await fetch(`/api/lobby/${pin}`, {

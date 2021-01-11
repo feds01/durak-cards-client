@@ -1,0 +1,37 @@
+.Container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  align-items: center;
+
+  & .Login {
+    background: #1a1d3d;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+    padding: 5em 2em;
+    border-radius: 12px;
+
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    margin: 0 auto;
+
+    & input {
+      background: #3b3d54;
+    }
+
+    & h2 {
+      font-size: 28px;
+      font-family: 'Cabin', sans-serif;
+    }
+
+    & p {
+      color: white;
+      font-size: 15px;
+
+      & a {
+        color: dodgerblue;
+      }
+    }
+  }
+}

@@ -1,20 +1,33 @@
-$green: #7ceaa4;
-$purple: #3b3d54;
-
-.App-wrapper {
+.Wrapper {
   perspective-origin: 50% 50%;
 }
 
-.App-join {
+.Prompt {
+  flex-grow: 1;
+}
+
+.Container {
   max-width: 600px;
   margin: 3% auto;
   padding: 30px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border-radius: 3px;
   text-align: center;
   font-size: 1.4vw;
+
+  & p {
+    color: white;
+    font-size: 15px;
+
+    & a {
+      color: dodgerblue;
+    }
+  }
 }
 
-.floating-card {
+.floatingCard {
   width: 64px;
   height: 64px;
   position: absolute;
@@ -23,13 +36,17 @@ $purple: #3b3d54;
 }
 
 
+$green: #7ceaa4;
+$purple: #3b3d54;
+
+
 // Floating cards icons
 $total: 12;
 
 @for $i from 1 through $total {
   $scale: random(2) - .4;
 
-  .floating-card:nth-child(#{$i}) {
+  .floatingCard:nth-child(#{$i}) {
     left: random(120) * 1% - 20;
     animation: raise#{$i} 6 + random(15) +s linear infinite;
     animation-delay: random(5) - 5 + s;
