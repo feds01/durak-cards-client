@@ -23,12 +23,14 @@ import {updateTokens} from "../../utils/auth";
 const RegisterSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email').required('Required'),
     name: Yup.string()
-        .trim()
-        .max(20, 'Name too long.')
+        .trim("Name cannot have spaces.")
+        .strict()
+        .matches(/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/, "Name cannot have spaces.")
+        .max(20, "Name too long")
         .required('Required'),
     password: Yup.string()
-        .min(6, 'Password too short.')
-        .trim()
+        .min(8, "Password too short")
+        .max(30, "Password too long")
         .required('Required'),
 });
 
