@@ -24,7 +24,6 @@ const RegisterSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email').required('Required'),
     name: Yup.string()
         .trim()
-        .min(2, 'Name too short.')
         .max(20, 'Name too long.')
         .required('Required'),
     password: Yup.string()
@@ -71,7 +70,7 @@ const RegisterRoute = () => {
 
                 return (
                     <div className={styles.Container}>
-                        <Form autoComplete={"off"}>
+                        <Form noValidate autoComplete={"off"}>
                             <motion.div
                                 transition={{duration: 0.5}}
                                 initial={{x: "calc(100vw)"}}
@@ -96,24 +95,21 @@ const RegisterRoute = () => {
                                         onChange={handleChange}
                                     />
                                     <Input
-                                        id={'name'}
+                                        name={'name'}
                                         style={{
                                             paddingBottom: "8px"
                                         }}
                                         placeholder={'Username'}
-                                        autoCorrect={"off"}
-                                        autoCapitalize={"off"}
-                                        autoComplete={"off"}
+                                        autocomplete="new-password"
                                         error={Boolean(errors.name)}
                                         helperText={errors.name || ""}
                                         value={values.name}
                                         onChange={handleChange}
                                     />
                                     <Input
-                                        id={'password'}
+                                        name={'password'}
                                         type={"password"}
-                                        autoCorrect={"off"}
-                                        autoComplete={"new-password"}
+                                        autoComplete="new-password"
                                         placeholder={'Password'}
                                         error={Boolean(errors.password)}
                                         helperText={errors.password || ""}

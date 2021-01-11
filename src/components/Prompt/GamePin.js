@@ -4,20 +4,18 @@ import Input from "../Input";
 import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
 import {getLobby} from "../../utils/networking";
+import * as Yup from "yup";
+
+const PinSchema = Yup.object().shape({
+    pin: Yup.string().matches(/^\d{6}$/g, "Game PIN is 6 digits long."),
+});
 
 const GamePin = (props) => {
     return (
         <Formik
             initialValues={{pin: ''}}
             validateOnChange={false}
-            validate={(values) => {
-                const errors = {};
-
-                if (!values.pin.match(/^[0-9]*$/gm)) errors.pin = 'Game PIN should be numerical.';
-                else if (values.pin.length !== 6) errors.pin = 'Game PIN is 6 digits long.';
-
-                return errors;
-            }}
+            validationSchema={PinSchema}
             onSubmit={async (values, {setSubmitting, setErrors}) => {
                 // make a request to the API to check if there is a game with the given pin,
                 // and if so we'll set the next stage of the prompt (enter the pin).

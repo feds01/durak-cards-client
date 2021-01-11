@@ -7,6 +7,7 @@
  */
 
 import React from "react";
+import * as Yup from "yup";
 import {Formik} from "formik";
 import styles from './index.module.scss';
 import {Link} from "react-router-dom";
@@ -19,6 +20,16 @@ import Input from "../../components/Input";
 import {login} from "../../utils/networking";
 import {updateTokens} from "../../utils/auth";
 
+
+const LoginSchema = Yup.object().shape({
+    name: Yup.string()
+        .trim()
+        .max(20, 'Name too long.')
+        .required('Required'),
+    password: Yup.string()
+        .trim()
+        .required('Required'),
+});
 
 const LoginRoute = () => {
     const history = useHistory();
@@ -40,23 +51,13 @@ const LoginRoute = () => {
         }
     }
 
-    function validate(values) {
-        const errors = {};
-
-        if (values.name === "" || !values.name.trim()) errors.name = "Name can't be empty.";
-        else if (values.name > 20) errors.name = "Name is too long.";
-
-        if (values.password === "") errors.password = "Password can't be empty.";
-
-        return errors;
-    }
 
     return (
 
         <Formik
             initialValues={{name: '', password: ''}}
-            validateOnChange={false}
-            validate={validate}
+            validateOnBlur
+            validationSchema={LoginSchema}
             onSubmit={onSubmit}
         >
             {props => {

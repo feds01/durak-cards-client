@@ -4,20 +4,24 @@ import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
 import {checkName} from "../../utils/networking";
 import Input from "../Input";
+import * as Yup from "yup";
+
+
+const NameSchema = Yup.object().shape({
+    name: Yup.string()
+        .trim("Name cannot have spaces.")
+        .strict()
+        .matches(/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/, "Name cannot have spaces.")
+        .max(20, "Name too long")
+        .required("Name can't be empty")
+});
 
 const GameName = (props) => {
     return (
         <Formik
             initialValues={{name: ''}}
             validateOnChange={false}
-            validate={(values) => {
-                const errors = {};
-
-                if (values.name === "" || !values.name.trim()) errors.name = "Name can't be empty.";
-                else if (values.name > 20) errors.name = "Name is too long.";
-
-                return errors;
-            }}
+            validationSchema={NameSchema}
             onSubmit={async (values, {setSubmitting, setErrors}) => {
                 // make a request to the API to check if there is a game with the given pin,
                 // and if so we'll set the next stage of the prompt (enter the pin).

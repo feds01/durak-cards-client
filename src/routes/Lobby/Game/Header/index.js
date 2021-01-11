@@ -1,7 +1,7 @@
+import clsx from "clsx";
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './index.module.scss';
-import clsx from "clsx";
 
 const Header = props => {
     return (

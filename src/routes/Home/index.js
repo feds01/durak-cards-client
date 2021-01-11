@@ -18,6 +18,12 @@ const HomeRoute = () => {
 
     return (
         <>
+            <div className={styles.Wrapper}>
+                {/* This is a bit of a hack to render 12 cards without using 12 lines*/}
+                {
+                    [...Array(12)].map((e, i) => <PlayingCardIcon className={styles.floatingCard} key={i}/>)
+                }
+            </div>
             <div className={styles.Container}>
                 <Logo size={64}/>
                 <Prompt
@@ -25,12 +31,6 @@ const HomeRoute = () => {
                     {...(location?.state?.pin && {pin: location.state.pin})}
                 />
                 <p>Got an account? Login <Link to={"/login"}>here</Link></p>
-            </div>
-            <div className={styles.Wrapper}>
-                {/* This is a bit of a hack to render 12 cards without using 12 lines*/}
-                {
-                    [...Array(12)].map((e, i) => <PlayingCardIcon className={styles.floatingCard} key={i}/>)
-                }
             </div>
         </>
     );
