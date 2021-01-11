@@ -9,6 +9,8 @@ import CardHolder from "./CardHolder";
 import PlayerActions from "./PlayerActions";
 import Header from "./Header";
 import Deck from "./Deck";
+import Player from "./Player";
+import clsx from "clsx";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -18,9 +20,6 @@ const reorder = (list, startIndex, endIndex) => {
     return result;
 };
 
-/**
- *
- * */
 const move = (source, destination, droppableSource, droppableDestination) => {
     const sourceClone = Array.from(source);
     const destClone = Array.from(destination);
@@ -86,6 +85,44 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
 }
 
 
+// An abstraction of how player avatars should be added depending on the
+// number of opponents in the game. The player avatars will be added depending
+// on the 'area' they have been allocated on the game board.
+const AvatarGridLayout = {
+    1: {
+        "players-top": 1,
+    },
+    2: {
+        "players-top": 2,
+    },
+    3: {
+        "players-top": 1,
+        "players-left": 1,
+        "players-right": 1
+    },
+    4: {
+        "players-top": 2,
+        "players-left": 1,
+        "players-right": 1
+    },
+    5: {
+        "players-top": 3,
+        "players-left": 1,
+        "players-right": 1
+    },
+    6: {
+        "players-top": 2,
+        "players-left": 2,
+        "players-right": 2
+    },
+    7: {
+        "players-top": 3,
+        "players-left": 2,
+        "players-right": 2
+    },
+}
+
+
 export default class Game extends React.Component {
     constructor(props) {
         super(props)
@@ -98,7 +135,11 @@ export default class Game extends React.Component {
             isDefending: false,
             canPlaceMap: Array.from(Array(6), () => true),
             tableTop: Array.from(Array(6), () => []),
+            players: [],
         }
+
+        // rendering helpers
+        this.renderPlayerRegion = this.renderPlayerRegion.bind(this);
 
         // game actions
         this.canForfeit = this.canForfeit.bind(this);
@@ -243,6 +284,33 @@ export default class Game extends React.Component {
         });
     }
 
+    renderPlayerRegion(region) {
+        const regionOrder = ['players-left', 'players-top', 'players-right'];
+
+        const {players} = this.state;
+        const layout = AvatarGridLayout[players.length];
+
+        // don't do anything if no players are currently present or the region isn't being used.
+        if (players.length === 0 || typeof layout[region] === 'undefined') {
+            return null;
+        }
+
+        // count the number of items that were inserted in the previous regions
+        const offset = regionOrder.slice(0, region.indexOf(region)).reduce((acc, value) => {
+            // Don't add anything to the accumulator if the region isn't being used for the
+            // current player count.
+            if (!Object.keys(AvatarGridLayout[players.length]).includes(value)) {
+                return acc;
+            }
+
+            return acc + AvatarGridLayout[players.length][value];
+        }, 0);
+
+        return players.slice(offset, layout[region]).map((player, index) => {
+            return <Player {...player} key={index}/>
+        });
+    }
+
     render() {
         const {socket} = this.props;
         const {deck, out, deckSize, isDefending, trumpCard, canPlaceMap, tableTop} = this.state;
@@ -254,8 +322,12 @@ export default class Game extends React.Component {
             >
                 <div className={styles.GameContainer}>
                     <Header className={styles.GameHeader}/>
-                    <div className={styles.PlayerTop}>top player container</div>
-                    <div className={styles.PlayerLeft}>left player container</div>
+                    <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
+                        {this.renderPlayerRegion("players-top")}
+                    </div>
+                    <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
+                        {this.renderPlayerRegion("players-left")}
+                    </div>
                     <Table
                         className={styles.GameTable}
                         hand={deck}
@@ -265,8 +337,10 @@ export default class Game extends React.Component {
                     >
                         <Deck count={deckSize} trumpCard={trumpCard}/>
                     </Table>
-                    <div className={styles.PlayerRight}>right player container</div>
-                   <CardHolder cards={deck} className={styles.GameFooter}>
+                    <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
+                        {this.renderPlayerRegion("players-right")}
+                    </div>
+                    <CardHolder cards={deck} className={styles.GameFooter}>
                         <PlayerActions
                             socket={socket}
                             out={out}

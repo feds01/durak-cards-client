@@ -10,10 +10,11 @@
 }
 
 .CardGrid {
-  flex-grow: 1;
   display: grid;
   grid-template-columns: repeat(3, auto);
   grid-gap: 10px;
+  max-width: 480px;
+  margin: 0 auto;
   grid-auto-rows: 3fr 3fr;
   height: 100%;
 

@@ -5,9 +5,7 @@ import PropTypes from 'prop-types';
 import styles from './index.module.scss';
 import Button from "@material-ui/core/Button";
 import ClearIcon from '@material-ui/icons/Clear';
-import {ReactComponent as Crown} from "./../../../../assets/icons/crown.svg";
-import {ReactComponent as Shield} from "./../../../../assets/icons/shield.svg";
-import {ReactComponent as Swords} from "./../../../../assets/icons/swords.svg";
+import {StatusIcon} from "../Player";
 
 const PlayerActions = props => {
     const [statusText, setStatusText] = useState("");
@@ -40,7 +38,7 @@ const PlayerActions = props => {
             </Button>
 
             <div className={styles.Status}>
-                {props.out ? <Crown/> : (props.isDefending ? <Shield/> : <Swords/>)}
+                <StatusIcon out={props.out} isDefending={props.isDefending}/>
                 <span>{statusText}</span>
             </div>
         </div>
@@ -52,7 +50,7 @@ PlayerActions.propTypes = {
     actionName: PropTypes.string.isRequired,
     out: PropTypes.bool.isRequired,
     isDefending: PropTypes.bool.isRequired,
-    canForfeit: PropTypes.func.isRequired,
+    canForfeit: PropTypes.bool.isRequired,
     socket: PropTypes.object.isRequired,
 };
 
