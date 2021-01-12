@@ -1,14 +1,15 @@
+import clsx from "clsx";
+import React from 'react';
+import {withRouter} from "react-router";
+import {CSSTransition} from 'react-transition-group';
+
 import './index.scss';
 import GamePin from "./GamePin";
 import GameName from "./GameName";
 import GamePassphrase from "./GamePassphrase";
-import {updateTokens} from "../../utils/auth";
+import {hasAuthTokens, updateTokens} from "../../utils/auth";
 import {getLobby, joinLobby} from "../../utils/networking";
 
-import React from 'react';
-import {withRouter} from "react-router";
-import {CSSTransition} from 'react-transition-group';
-import clsx from "clsx";
 
 class Prompt extends React.Component {
     constructor(props) {
@@ -27,21 +28,38 @@ class Prompt extends React.Component {
         this.onError = this.onError.bind(this);
     }
 
-    async componentDidMount() {
-
-        if (typeof this.props.pin !== 'undefined') {
+    async componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevProps.pin !== this.props.pin && this.props.pin?.match(/^\d{6}$/g)) {
+            // don't show inputs until we figure out what we need show
+            this.setState({showStages: false, pin: this.props.pin});
 
             // verify that the given pin exists, if so set that as the pin number
             // and move onto the name stage.
             await getLobby(this.props.pin).then((res) => {
                 if (res.status) {
-                    this.setState({
-                        with2FA: res.data.with2FA,
-                        pin: this.props.pin,
-                        stage: "name"
-                    });
+                    if (hasAuthTokens()) {
+                        if (!res.data.with2FA) {
+                            this.onSubmit();
+                        } else {
+                            this.setState({
+                                with2FA: res.data.with2FA,
+                                pin: this.props.pin,
+                                stage: 'security',
+                                showStages: true,
+                            });
+                        }
+                    } else {
+                        this.setState({
+                            with2FA: res.data.with2FA,
+                            pin: this.props.pin,
+                            stage: "name",
+                            showStages: true,
+                        });
+                    }
+                } else {
+                    this.onError();
                 }
-            })
+            });
         }
     }
 
@@ -52,11 +70,11 @@ class Prompt extends React.Component {
      * @param {?String} passphrase - The passphrase for the lobby if the 2 factor auth is
      *        enabled for the current lobby.
      * */
-    async onSubmit(passphrase) {
+    async onSubmit(passphrase = "") {
         const {pin, with2FA, name} = this.state;
 
         const credentials = {
-            name,
+            ...name && {name},
             ...(with2FA && {passphrase})
         };
 
@@ -65,18 +83,15 @@ class Prompt extends React.Component {
         if (res.status) {
 
             // update our local storage with the tokens
-            updateTokens(res.token, res.refreshToken);
+            if (res.token && res.refreshToken) {
+                updateTokens(res.token, res.refreshToken);
+            }
 
             this.props.history.push(`/lobby/${pin}`);
         } else {
             // wait a second to register error message and then re-direct to home page
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            this.props.history.push(`/`);
+            this.onError();
         }
-
-        // pass the res object back to the GamePassphrase component to display
-        // information on the request failing.
-        return res;
     }
 
     onError() {
@@ -96,8 +111,20 @@ class Prompt extends React.Component {
         // the lobby.
         return (
             <div className={clsx(this.props.className)}>
-                {showStages && stage === 'pin' && <GamePin onSuccess={(pin) => {
-                    this.setState({pin: pin, stage: 'name'})
+                {showStages && stage === 'pin' && <GamePin onSuccess={async (pin) => {
+                    this.setState({pin});
+
+                    // if the user is logged in with some account, attempt to authenticate them
+                    // by using their credentials
+                    if (hasAuthTokens()) {
+                        if (!with2FA) {
+                            await this.onSubmit();
+                        } else {
+                            this.setState({stage: 'security'});
+                        }
+                    } else {
+                        this.setState({pin: pin, stage: 'name'});
+                    }
                 }}/>}
                 {showStages && stage === 'name' && <GameName pin={pin} onSuccess={async (name) => {
                     this.setState({name});

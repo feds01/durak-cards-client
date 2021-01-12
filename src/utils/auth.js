@@ -4,10 +4,20 @@
  *  * @return {{"token": ?String, "refreshToken": ?String}} the tokens.
  * */
 export function getAuthTokens() {
-    const token = sessionStorage.getItem("token");
-    const refreshToken = sessionStorage.getItem("refreshToken");
+    const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
 
     return {token, refreshToken};
+}
+
+/**
+ * Method to check if the user has tokens within local storage.
+ * */
+export function hasAuthTokens() {
+    const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    return token !== null && refreshToken !== null;
 }
 
 /**
@@ -18,19 +28,23 @@ export function getAuthTokens() {
  * @param {String} refreshToken - The new refresh token to be added to the localstorage.
  * */
 export const updateTokens = (token, refreshToken) => {
-    sessionStorage.setItem("token", token);
-    sessionStorage.setItem("refreshToken", refreshToken);
+    localStorage.clear();
+    localStorage.setItem("token", token);
+    localStorage.setItem("refreshToken", refreshToken);
 }
 
 /**
  * Function to create headers for an authenticated request using the localstorage with a new token
  * and refresh token.
  *
- * @return {{"x-token": ?String, "x-refresh-token": ?String}} the constructed headers.
+ * @return {{?token, ?refreshToken}} the constructed headers.
  * */
 export function getAuthHeader() {
+    const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
+
     return {
-        "x-token": sessionStorage.getItem("token"),
-        "x-refresh-token": sessionStorage.getItem("refreshToken")
+        ...(token !== null) && {'x-token': token},
+        ...(refreshToken !== null) && {'x-refresh-token': refreshToken},
     }
 }

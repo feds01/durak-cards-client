@@ -6,15 +6,25 @@
  * @email <alexander.fedotov.uk@gmail.com>
  */
 
-import React from "react";
+import React, {useEffect, useState} from "react";
 import styles from "./index.module.scss";
 import Logo from "../../components/Logo";
 import Prompt from "../../components/Prompt";
-import {Link, useLocation} from "react-router-dom";
+import {Link, useHistory, useLocation} from "react-router-dom";
 import {ReactComponent as PlayingCardIcon} from './../../assets/image/playing-card.svg';
 
 const HomeRoute = () => {
     const location = useLocation();
+    const history = useHistory();
+    const [pin, setPin] = useState(null);
+
+    // Only fire this on mount
+    useEffect(() => {
+       if (location?.state?.pin) {
+           setPin(location.state.pin);
+           history.replace('', null);
+       }
+    }, []);
 
     return (
         <>
@@ -28,7 +38,7 @@ const HomeRoute = () => {
                 <Logo size={64}/>
                 <Prompt
                     className={styles.Prompt}
-                    {...(location?.state?.pin && {pin: location.state.pin})}
+                    {...pin && {pin}}
                 />
                 <p>Got an account? Login <Link to={"/login"}>here</Link></p>
             </div>

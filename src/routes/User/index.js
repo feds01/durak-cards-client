@@ -12,7 +12,7 @@ import React, {useEffect, useState} from "react";
 import Divider from "@material-ui/core/Divider";
 
 
-import {getAuthTokens} from "../../utils/auth";
+import {hasAuthTokens} from "../../utils/auth";
 import {getUser} from "../../utils/networking";
 import GameDialog from "../../components/GameDialog";
 import GameCard from "../../components/DashboardGameCard";
@@ -30,11 +30,8 @@ const UserRoute = () => {
     // a registered user, if they do not, the method will re-direct
     // the client to the login page.
     useEffect(() => {
-        const {token, refreshToken} = getAuthTokens();
-
-        // if either the token or refreshToken is null, re-direct the user
-        // to the login page.
-        if (token === null || refreshToken === null) {
+        // if either the token or refreshToken is null, re-direct the user to the login page.
+        if (!hasAuthTokens()) {
             history.push("/login");
         } else {
             getUser().then((res) => {

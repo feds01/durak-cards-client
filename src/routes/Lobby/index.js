@@ -46,7 +46,6 @@ class LobbyRoute extends React.Component {
 
         // prevent the user from accidentally navigating off the page...
         window.onbeforeunload = () => true;
-
         const pin = this.props.match.params.pin;
 
         // TODO: move websocket endpoint to config

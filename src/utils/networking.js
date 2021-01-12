@@ -6,7 +6,8 @@ export async function joinLobby(pin, credentials) {
     return await fetch(`/api/lobby/${pin}/join`, {
         method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            ...getAuthHeader()
         },
         body: payload
     }).then((res) => res.json());

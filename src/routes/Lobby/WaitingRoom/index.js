@@ -1,5 +1,6 @@
-import React, {Component} from 'react';
 import clsx from "clsx";
+import PropTypes from "prop-types";
+import React, {Component} from 'react';
 import styles from "./index.module.scss";
 import Passphrase from "../../../components/Passphrase";
 import PlayerCounter from "../../../components/PlayerCounter";
@@ -20,9 +21,11 @@ class WaitingRoom extends Component {
     /**
      * Function to send a 'kick' request to the server for a specific player
      * within the lobby which is specified by name.
+     *
+     * @param {string} id - The id of the player.
      * */
-    onKick(name) {
-        this.props.socket.emit(events.KICK_PLAYER, {name});
+    onKick(id) {
+        this.props.socket.emit(events.KICK_PLAYER, {id});
     }
 
 
@@ -73,11 +76,11 @@ class WaitingRoom extends Component {
                         lobby.players.map((player, index) => (
                             <PlayerItem
                                 key={index}
-                                isOwner={player === lobby.owner}
-                                name={player}
+                                isOwner={player.name === lobby.owner}
+                                name={player.name}
                                 isHost={isHost}
                                 {...(isHost && {
-                                    onKick: () => this.onKick(player),
+                                    onKick: () => this.onKick(player.id),
                                 })}
                             />
                         ))
@@ -87,5 +90,13 @@ class WaitingRoom extends Component {
         );
     }
 }
+
+WaitingRoom.propTypes = {
+    isHost: PropTypes.bool.isRequired,
+    pin: PropTypes.string.isRequired,
+    socket: PropTypes.object.isRequired,
+    lobby: PropTypes.object,
+}
+
 
 export default WaitingRoom;
