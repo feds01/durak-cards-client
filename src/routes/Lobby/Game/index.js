@@ -11,6 +11,7 @@ import Header from "./Header";
 import Deck from "./Deck";
 import Player from "./Player";
 import clsx from "clsx";
+import VictoryDialog from "./Victory";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -136,6 +137,7 @@ export default class Game extends React.Component {
             canPlaceMap: Array.from(Array(6), () => true),
             tableTop: Array.from(Array(6), () => []),
             players: [],
+            showVictory: false,
         }
 
         // rendering helpers
@@ -277,10 +279,11 @@ export default class Game extends React.Component {
         this.props.socket.on("begin_round", this.handleGameStateUpdate);
         this.props.socket.on(events.ACTION, this.handleGameStateUpdate);
         this.props.socket.on(events.INVALID_MOVE, this.handleGameStateUpdate);
-
-
-        // TODO: implement victory screen...
-        this.props.socket.on("victory", (message) => {
+        this.props.socket.on(events.VICTORY, (event) => {
+            this.setState({
+                showVictory: true,
+                playerOrder: event.players,
+            })
         });
     }
 
@@ -312,44 +315,55 @@ export default class Game extends React.Component {
     }
 
     render() {
-        const {socket} = this.props;
+        const {socket, lobby} = this.props;
         const {deck, out, deckSize, isDefending, trumpCard, canPlaceMap, tableTop} = this.state;
 
         return (
-            <DragDropContext
-                onDragEnd={this.onDragEnd}
-                onBeforeCapture={this.onBeforeCapture}
-            >
-                <div className={styles.GameContainer}>
-                    <Header className={styles.GameHeader}/>
-                    <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
-                        {this.renderPlayerRegion("players-top")}
-                    </div>
-                    <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
-                        {this.renderPlayerRegion("players-left")}
-                    </div>
-                    <Table
-                        className={styles.GameTable}
-                        hand={deck}
-                        placeMap={canPlaceMap}
-                        tableTop={tableTop}
-                        isDefending={isDefending}
-                    >
-                        <Deck count={deckSize} trumpCard={trumpCard}/>
-                    </Table>
-                    <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
-                        {this.renderPlayerRegion("players-right")}
-                    </div>
-                    <CardHolder cards={deck} className={styles.GameFooter}>
-                        <PlayerActions
-                            socket={socket}
-                            out={out}
-                            canForfeit={this.canForfeit()}
+            <>
+                {this.state.showVictory && (
+                    <VictoryDialog
+                        onNext={() => {
+                            socket.emit(events.JOIN_GAME, {});
+                        }}
+                        name={lobby.name}
+                        players={this.state.playerOrder}
+                    />
+                )}
+                <DragDropContext
+                    onDragEnd={this.onDragEnd}
+                    onBeforeCapture={this.onBeforeCapture}
+                >
+                    <div className={styles.GameContainer}>
+                        <Header className={styles.GameHeader}/>
+                        <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
+                            {this.renderPlayerRegion("players-top")}
+                        </div>
+                        <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
+                            {this.renderPlayerRegion("players-left")}
+                        </div>
+                        <Table
+                            className={styles.GameTable}
+                            hand={deck}
+                            placeMap={canPlaceMap}
+                            tableTop={tableTop}
                             isDefending={isDefending}
-                        />
-                    </CardHolder>
-                </div>
-            </DragDropContext>
+                        >
+                            <Deck count={deckSize} trumpCard={trumpCard}/>
+                        </Table>
+                        <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
+                            {this.renderPlayerRegion("players-right")}
+                        </div>
+                        <CardHolder cards={deck} className={styles.GameFooter}>
+                            <PlayerActions
+                                socket={socket}
+                                out={out}
+                                canForfeit={this.canForfeit()}
+                                isDefending={isDefending}
+                            />
+                        </CardHolder>
+                    </div>
+                </DragDropContext>
+            </>
         );
     }
 }
