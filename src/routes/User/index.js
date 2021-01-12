@@ -12,10 +12,11 @@ import React, {useEffect, useState} from "react";
 import Divider from "@material-ui/core/Divider";
 
 
-import GameCard from "../../components/DashboardGameCard";
+import {getAuthTokens} from "../../utils/auth";
+import {getUser} from "../../utils/networking";
 import GameDialog from "../../components/GameDialog";
+import GameCard from "../../components/DashboardGameCard";
 import LoadingScreen from "../../components/LoadingScreen";
-import {getAuthHeader, getAuthTokens} from "../../utils/auth";
 import {RefreshDashboardContext} from "../../contexts/RefreshDashboard";
 
 const UserRoute = () => {
@@ -36,16 +37,13 @@ const UserRoute = () => {
         if (token === null || refreshToken === null) {
             history.push("/login");
         } else {
-            fetch("/api/user", {
-                headers: getAuthHeader(),
-            }).then(res => res.json())
-                .then((res) => {
-                    if (res.status) {
-                        setUserData(res.data);
-                    } else {
-                        history.push("/login");
-                    }
-                });
+            getUser().then((res) => {
+                if (res.status) {
+                    setUserData(res.data);
+                } else {
+                    history.push("/login");
+                }
+            });
         }
     }, [refreshData, history]);
 
