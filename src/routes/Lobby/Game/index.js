@@ -125,6 +125,9 @@ const AvatarGridLayout = {
 
 
 export default class Game extends React.Component {
+
+    static EmptyPlaceMap = Array.from(Array(6), () => true);
+
     constructor(props) {
         super(props)
 
@@ -135,10 +138,14 @@ export default class Game extends React.Component {
             canAttack: false,
             isDefending: false,
             trumpCard: null,
-            canPlaceMap: Array.from(Array(6), () => true),
+            canPlaceMap: Game.EmptyPlaceMap,
             tableTop: Array.from(Array(6), () => []),
             players: [],
+
+            // State related to UI
             showVictory: false,
+            isDragging: false,
+            queuedUpdates: [],
         }
 
         // rendering helpers
@@ -148,6 +155,7 @@ export default class Game extends React.Component {
         this.canForfeit = this.canForfeit.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
+        this.onDragStart = this.onDragStart.bind(this);
         this.onBeforeCapture = this.onBeforeCapture.bind(this);
         this.handleGameStateUpdate = this.handleGameStateUpdate.bind(this);
     }
@@ -178,6 +186,10 @@ export default class Game extends React.Component {
         });
     }
 
+    onBeforeDragStart(event) {
+        this.setState({isDragging: true});
+    }
+
     onDragEnd(result) {
         const {source, destination} = result;
 
@@ -185,6 +197,7 @@ export default class Game extends React.Component {
         if (!destination) {
             // reset the canPlaceMap for new cards
             return this.setState({
+                isDragging: false,
                 canPlaceMap: Array.from(Array(6), () => true),
             });
         }
@@ -192,6 +205,7 @@ export default class Game extends React.Component {
         switch (source.droppableId) {
             case destination.droppableId:
                 this.setState({
+                    isDragging: false,
                     deck: reorder(
                         this.state.deck,
                         source.index,
@@ -221,6 +235,7 @@ export default class Game extends React.Component {
                     resultantTableTop[index] = result.dest;
 
                     this.setState({
+                        isDragging: false,
                         canPlaceMap: Array.from(Array(6), () => true),
                         deck: result.src,
                         tableTop: resultantTableTop
@@ -248,8 +263,27 @@ export default class Game extends React.Component {
     }
 
     handleGameStateUpdate(update) {
-        // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards
-        // on the tableTop.
+
+        // prevent updates from being applied to table-top or user deck whilst a drag
+        // event is occurring. We can attempt to merge the 'state' after the drag update
+        // completes gracefully or not. If the state merge fails, we can always ask the
+        // server for the game state and update the client with said state.
+        // TODO: We could also 'throw' away some updates if they are redundant or are
+        //       automatically applied to the game state with the next update.
+        if (this.state.isDragging) {
+            this.setState(prevState => {
+                const updates = prevState.queuedUpdates;
+                updates.push(update);
+
+                return {
+                    ...prevState,
+                    queuedUpdates: updates,
+                }
+            });
+
+            return;
+        }
+
         const tableTop = Object.entries(update.tableTop).map((cards) => {
             return cards.filter(card => card !== null).map((card) => {
                 return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
@@ -257,6 +291,8 @@ export default class Game extends React.Component {
         });
 
         // TODO: move deckSize into protocol
+        // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards
+        // on the tableTop.
         for (let index = 0; index < 6; index++) {
             if (typeof tableTop[index] === 'undefined') {
                 tableTop[index] = [];
@@ -332,6 +368,7 @@ export default class Game extends React.Component {
                     />
                 )}
                 <DragDropContext
+                    onBeforeDragStart={this.onBeforeDragStart}
                     onDragEnd={this.onDragEnd}
                     onBeforeCapture={this.onBeforeCapture}
                 >
