@@ -155,7 +155,6 @@ export default class Game extends React.Component {
         this.canForfeit = this.canForfeit.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
-        this.onDragStart = this.onDragStart.bind(this);
         this.onBeforeCapture = this.onBeforeCapture.bind(this);
         this.handleGameStateUpdate = this.handleGameStateUpdate.bind(this);
     }
