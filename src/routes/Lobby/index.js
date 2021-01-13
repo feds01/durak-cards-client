@@ -17,6 +17,7 @@ import WaitingRoom from "./WaitingRoom";
 import {getAuthTokens, updateTokens} from "../../utils/auth";
 import LoadingScreen from "../../components/LoadingScreen";
 import {error, events, game} from "shared";
+import {SOCKET_ENDPOINT} from "../../config";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -48,8 +49,7 @@ class LobbyRoute extends React.Component {
         window.onbeforeunload = () => true;
         const pin = this.props.match.params.pin;
 
-        // TODO: move websocket endpoint to config
-        const socket = io(window.location.protocol + "//" + window.location.hostname + `:5000/${pin}`, {
+        const socket = io(SOCKET_ENDPOINT + `/${pin}`, {
             query: getAuthTokens(),
             transports: ["websocket"]
         });
