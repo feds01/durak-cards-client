@@ -1,8 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
-import {lobby, events} from "shared";
+import {utils, game, events} from "shared";
 import styles from './index.module.scss';
 import GameSecurityCard from "../SecurityCard";
+
+function createGamePassphrase() {
+    const cardSuites = Object.values(game.CardSuits);
+    utils.shuffleArray(cardSuites);
+
+    return cardSuites;
+}
 
 Passphrase.propTypes = {
     passphrase: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -26,7 +33,7 @@ function Passphrase(props) {
 
     useEffect(() => {
         if (timeLeft === 0) {
-            const newPassphrase = lobby.createGamePassphrase();
+            const newPassphrase = createGamePassphrase();
 
             setTimeLeft(props.timeout);
             setPassphrase(newPassphrase);
