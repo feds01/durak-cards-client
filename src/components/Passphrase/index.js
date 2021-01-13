@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import styles from './index.module.scss';
 import React, {useEffect, useState} from 'react';
 import GameSecurityCard from "../SecurityCard";
-import {CardSuits, ClientEvents, shuffleArray} from "shared";
+import {CardSuits, ServerEvents, shuffleArray} from "shared";
 
 function createGamePassphrase() {
     const cardSuites = Object.values(CardSuits);
@@ -39,7 +39,7 @@ function Passphrase(props) {
             setPassphrase(newPassphrase);
 
             // send message on ws to update the client
-            props.socket.emit(ClientEvents.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
+            props.socket.emit(ServerEvents.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
         }
 
     }, [timeLeft, props.timeout, props.socket]);

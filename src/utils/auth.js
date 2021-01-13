@@ -7,7 +7,10 @@ export function getAuthTokens() {
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
 
-    return {token, refreshToken};
+    return {
+        ...(token !== null) && {token},
+        ...(refreshToken !== null) && {refreshToken},
+    }
 }
 
 /**
@@ -20,15 +23,23 @@ export function hasAuthTokens() {
     return token !== null && refreshToken !== null;
 }
 
+
+/**
+ * Method to clear tokens within local storage.
+ * */
+export function clearTokens() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+}
+
 /**
  * Function to update the localstorage with a new token and refresh
  * token.
  *
- * @param {String} token - The new token to be added to the localstorage.
- * @param {String} refreshToken - The new refresh token to be added to the localstorage.
+ * @param {string} token - The new token to be added to the localstorage.
+ * @param {string} refreshToken - The new refresh token to be added to the localstorage.
  * */
-export const updateTokens = (token, refreshToken) => {
-    localStorage.clear();
+export function updateTokens(token, refreshToken) {
     localStorage.setItem("token", token);
     localStorage.setItem("refreshToken", refreshToken);
 }

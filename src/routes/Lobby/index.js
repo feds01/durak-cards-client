@@ -16,8 +16,8 @@ import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
 import {SOCKET_ENDPOINT} from "../../config";
 import LoadingScreen from "../../components/LoadingScreen";
-import {getAuthTokens, updateTokens} from "../../utils/auth";
-import {ClientEvents, error,  GameStatus, ServerEvents} from "shared";
+import {clearTokens, getAuthTokens, updateTokens} from "../../utils/auth";
+import {ClientEvents, error, GameStatus, ServerEvents} from "shared";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -56,23 +56,26 @@ class LobbyRoute extends React.Component {
 
         // client-side
         socket.on("connect", () => {
-            socket.emit(ClientEvents.JOIN_GAME, {});
+            socket.emit(ServerEvents.JOIN_GAME, {});
         });
 
 
         // The server disconnected us for some reason... re-direct back to home page and
         // clear the session so the user isn't using stale JWTs
-        socket.on("close", (event) => {
+        socket.on(ClientEvents.CLOSE, (event) => {
             // disable the 'navigation prompt' from alerting the user
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
 
-            sessionStorage.clear();
+            // clear our token if the user says it's stale...
+            if (event.token === "stale") {
+                clearTokens();
+            }
+
             this.props.history.push("/");
         });
 
         socket.on("connect_error", err => {
-
             // disable the 'navigation prompt' from alerting the user
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
@@ -106,6 +109,10 @@ class LobbyRoute extends React.Component {
                 if (err.message === error.NON_EXISTENT_LOBBY) {
                     this.props.history.push("/");
                 } else if (err.message === error.AUTHENTICATION_FAILED) {
+                    if (err?.data?.token === "stale") {
+                        clearTokens();
+                    }
+
                     this.props.history.push({
                         pathname: "/",
                         state: {pin}
@@ -126,10 +133,9 @@ class LobbyRoute extends React.Component {
             }
         });
 
-
         // if the client is successfully authenticated and joined the lobby
         // on the server, then we can begin to load the lobby...
-        socket.on(ServerEvents.JOINED_GAME, (message) => {
+        socket.on(ClientEvents.JOINED_GAME, (message) => {
             // console.log("players: ", message);
             this.setState({
                 loaded: true,
@@ -140,7 +146,7 @@ class LobbyRoute extends React.Component {
 
         // If a new player joins the lobby, we should update the player
         // list
-        socket.on(ServerEvents.NEW_PLAYER, (message) => {
+        socket.on(ClientEvents.NEW_PLAYER, (message) => {
             this.setState((oldState) => {
                 return {
                     lobby: {
@@ -153,12 +159,12 @@ class LobbyRoute extends React.Component {
         });
 
         // set the lobby stage to 'countdown'
-        socket.on(ServerEvents.COUNTDOWN, () => {
+        socket.on(ClientEvents.COUNTDOWN, () => {
             this.setState({stage: GameStatus.STARTED});
         });
 
         // set the lobby stage to 'game'
-        socket.on(ServerEvents.GAME_STARTED, () => {
+        socket.on(ClientEvents.GAME_STARTED, () => {
             this.setState({stage: GameStatus.PLAYING});
         });
 
@@ -189,7 +195,7 @@ class LobbyRoute extends React.Component {
     }
 
     render() {
-        const {loaded, stage, shouldBlockNavigation} = this.state;
+        const {loaded, error, stage, shouldBlockNavigation} = this.state;
 
         return (
             <>

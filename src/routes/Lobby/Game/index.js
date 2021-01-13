@@ -134,6 +134,7 @@ export default class Game extends React.Component {
             out: false,
             canAttack: false,
             isDefending: false,
+            trumpCard: null,
             canPlaceMap: Array.from(Array(6), () => true),
             tableTop: Array.from(Array(6), () => []),
             players: [],
@@ -255,7 +256,8 @@ export default class Game extends React.Component {
             });
         });
 
-        for (let index = 0; index < Game.DeckSize; index++) {
+        // TODO: move deckSize into protocol
+        for (let index = 0; index < 6; index++) {
             if (typeof tableTop[index] === 'undefined') {
                 tableTop[index] = [];
             }
@@ -348,7 +350,9 @@ export default class Game extends React.Component {
                             tableTop={tableTop}
                             isDefending={isDefending}
                         >
-                            <Deck count={deckSize} trumpCard={trumpCard}/>
+                            {
+                                trumpCard && <Deck count={deckSize} trumpCard={trumpCard}/>
+                            }
                         </Table>
                         <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
                             {this.renderPlayerRegion("players-right")}
@@ -371,6 +375,6 @@ export default class Game extends React.Component {
 Game.propTypes = {
     socket: PropTypes.object.isRequired,
     isHost: PropTypes.bool.isRequired,
-    pin: PropTypes.number.isRequired,
+    pin: PropTypes.string.isRequired,
     lobby: PropTypes.object.isRequired,
 };
