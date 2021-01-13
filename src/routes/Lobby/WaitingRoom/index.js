@@ -2,13 +2,15 @@ import clsx from "clsx";
 import PropTypes from "prop-types";
 import React, {Component} from 'react';
 import styles from "./index.module.scss";
-import Passphrase from "../../../components/Passphrase";
-import PlayerCounter from "../../../components/PlayerCounter";
-import Logo from "../../../components/Logo";
 import Button from "@material-ui/core/Button";
 import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
+
+
+import {ServerEvents} from "shared";
+import Logo from "../../../components/Logo";
 import PlayerItem from "../../../components/PlayerItem";
-import {events} from "shared";
+import Passphrase from "../../../components/Passphrase";
+import PlayerCounter from "../../../components/PlayerCounter";
 
 class WaitingRoom extends Component {
     constructor(props) {
@@ -25,7 +27,7 @@ class WaitingRoom extends Component {
      * @param {string} id - The id of the player.
      * */
     onKick(id) {
-        this.props.socket.emit(events.KICK_PLAYER, {id});
+        this.props.socket.emit(ServerEvents.KICK_PLAYER, {id});
     }
 
 
@@ -60,7 +62,7 @@ class WaitingRoom extends Component {
                             onClick={() => {
                                 // emit the 'game_start' event and let all other clients
                                 // begin the 'countdown stage.
-                                socket.emit(events.START_GAME);
+                                socket.emit(ServerEvents.START_GAME);
                             }}
                             disabled={lobby.players.length < 2}
                             color={'primary'}

@@ -1,17 +1,17 @@
+import clsx from "clsx";
 import React from "react";
 import PropTypes from 'prop-types';
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
 
-import {game, events} from "shared";
-import Table from "./Table";
-import CardHolder from "./CardHolder";
-import PlayerActions from "./PlayerActions";
-import Header from "./Header";
 import Deck from "./Deck";
+import Table from "./Table";
 import Player from "./Player";
-import clsx from "clsx";
+import Header from "./Header";
+import CardHolder from "./CardHolder";
 import VictoryDialog from "./Victory";
+import PlayerActions from "./PlayerActions";
+import {ClientEvents, MoveTypes, parseCard, ServerEvents} from "shared";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -49,8 +49,8 @@ function canPlaceOnPrevious(index, tableTop) {
 }
 
 function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
-    const allNumerics = new Set(tableTop.flat().map(card => game.parseCard(card.value)[0]));
-    const [attackingNumeric, attackingSuit] = game.parseCard(card);
+    const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
+    const attackingCard = parseCard(card);
 
     if (isDefending) {
 
@@ -58,7 +58,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         if (!canPlaceOnPrevious(pos, tableTop) &&
             tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
-            allNumerics.has(attackingNumeric)
+            allNumerics.has(attackingCard.value)
         ) {
             return true;
         }
@@ -66,14 +66,14 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         // check that the tableTop contains a card at the 'pos'
         if (tableTop[pos].length !== 1) return false;
 
-        const [numeric, suit] = game.parseCard(tableTop[pos][0].value);
+        const coveringCard = parseCard(tableTop[pos][0].value);
 
-        if (attackingSuit === suit) {
+        if (attackingCard.suit === coveringCard.suit) {
             // The trumping suit doesn't matter here since they are the same
-            return numeric < attackingNumeric;
+            return coveringCard.value < attackingCard.value;
         }
 
-        return attackingSuit === trumpSuit;
+        return attackingCard.suit === trumpSuit;
     } else {
         // check that the tableTop contains a card at the 'pos'
         if (tableTop[pos].length !== 0) {
@@ -81,7 +81,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         }
 
         // special case where the number of cards is zero.
-        return allNumerics.size === 0 || allNumerics.has(attackingNumeric);
+        return allNumerics.size === 0 || allNumerics.has(attackingCard.value);
     }
 }
 
@@ -226,17 +226,17 @@ export default class Game extends React.Component {
                     });
 
                     // emit a socket event to notify that the player has made a move...
-                    this.props.socket.emit(events.MOVE, {
+                    this.props.socket.emit(ServerEvents.MOVE, {
                         ...(isDefending && {
                             // handle the case where the player is re-directing the attack vector to the next
                             //player.
-                            type: result.dest.length === 2 ? game.Game.MoveTypes.COVER : game.Game.MoveTypes.PLACE,
+                            type: result.dest.length === 2 ? MoveTypes.COVER : MoveTypes.PLACE,
                             card: item.value,
                             pos: index,
                         }),
 
                         ...(!isDefending && {
-                            type: game.Game.MoveTypes.PLACE,
+                            type: MoveTypes.PLACE,
                             card: item.value
                         })
                     })
@@ -255,7 +255,7 @@ export default class Game extends React.Component {
             });
         });
 
-        for (let index = 0; index < game.Game.DeckSize; index++) {
+        for (let index = 0; index < Game.DeckSize; index++) {
             if (typeof tableTop[index] === 'undefined') {
                 tableTop[index] = [];
             }
@@ -277,9 +277,9 @@ export default class Game extends React.Component {
         // @@Depreciated this should be removed as the initial state of the game
         // should be transferred on the 'started_game' event.
         this.props.socket.on("begin_round", this.handleGameStateUpdate);
-        this.props.socket.on(events.ACTION, this.handleGameStateUpdate);
-        this.props.socket.on(events.INVALID_MOVE, this.handleGameStateUpdate);
-        this.props.socket.on(events.VICTORY, (event) => {
+        this.props.socket.on(ClientEvents.ACTION, this.handleGameStateUpdate);
+        this.props.socket.on(ClientEvents.INVALID_MOVE, this.handleGameStateUpdate);
+        this.props.socket.on(ClientEvents.VICTORY, (event) => {
             this.setState({
                 showVictory: true,
                 playerOrder: event.players,
@@ -323,7 +323,7 @@ export default class Game extends React.Component {
                 {this.state.showVictory && (
                     <VictoryDialog
                         onNext={() => {
-                            socket.emit(events.JOIN_GAME, {});
+                            socket.emit(ClientEvents.JOIN_GAME, {});
                         }}
                         name={lobby.name}
                         players={this.state.playerOrder}

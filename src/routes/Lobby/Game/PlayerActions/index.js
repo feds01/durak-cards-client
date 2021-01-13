@@ -1,11 +1,11 @@
 import clsx from "clsx";
-import React, {useEffect, useState} from 'react';
-import {events, game} from "shared";
 import PropTypes from 'prop-types';
+import {StatusIcon} from "../Player";
 import styles from './index.module.scss';
 import Button from "@material-ui/core/Button";
 import ClearIcon from '@material-ui/icons/Clear';
-import {StatusIcon} from "../Player";
+import React, {useEffect, useState} from 'react';
+import {MoveTypes, ServerEvents} from "shared";
 
 const PlayerActions = props => {
     const [statusText, setStatusText] = useState("");
@@ -21,8 +21,8 @@ const PlayerActions = props => {
 
 
     function sendForfeit() {
-        props.socket.emit(events.MOVE, {
-            type: game.Game.MoveTypes.FORFEIT,
+        props.socket.emit(ServerEvents.MOVE, {
+            type: MoveTypes.FORFEIT,
         });
     }
 

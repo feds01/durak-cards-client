@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
-import {utils, game, events} from "shared";
 import styles from './index.module.scss';
+import React, {useEffect, useState} from 'react';
 import GameSecurityCard from "../SecurityCard";
+import {CardSuits, ClientEvents, shuffleArray} from "shared";
 
 function createGamePassphrase() {
-    const cardSuites = Object.values(game.CardSuits);
-    utils.shuffleArray(cardSuites);
+    const cardSuites = Object.values(CardSuits);
+    shuffleArray(cardSuites);
 
     return cardSuites;
 }
@@ -39,7 +39,7 @@ function Passphrase(props) {
             setPassphrase(newPassphrase);
 
             // send message on ws to update the client
-            props.socket.emit(events.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
+            props.socket.emit(ClientEvents.UPDATE_PASSPHRASE, {passphrase: newPassphrase.join("")});
         }
 
     }, [timeLeft, props.timeout, props.socket]);

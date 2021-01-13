@@ -14,10 +14,10 @@ import {Prompt, withRouter} from "react-router";
 import Game from "./Game";
 import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
-import {getAuthTokens, updateTokens} from "../../utils/auth";
-import LoadingScreen from "../../components/LoadingScreen";
-import {error, events, game} from "shared";
 import {SOCKET_ENDPOINT} from "../../config";
+import LoadingScreen from "../../components/LoadingScreen";
+import {getAuthTokens, updateTokens} from "../../utils/auth";
+import {ClientEvents, error,  GameStatus, ServerEvents} from "shared";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -31,7 +31,7 @@ class LobbyRoute extends React.Component {
             loaded: false,
             lobby: {},
             error: null,
-            stage: game.GameState.WAITING,
+            stage: GameStatus.WAITING,
         };
     }
 
@@ -56,7 +56,7 @@ class LobbyRoute extends React.Component {
 
         // client-side
         socket.on("connect", () => {
-            socket.emit(events.JOIN_GAME, {});
+            socket.emit(ClientEvents.JOIN_GAME, {});
         });
 
 
@@ -129,7 +129,7 @@ class LobbyRoute extends React.Component {
 
         // if the client is successfully authenticated and joined the lobby
         // on the server, then we can begin to load the lobby...
-        socket.on(events.JOINED_GAME, (message) => {
+        socket.on(ServerEvents.JOINED_GAME, (message) => {
             // console.log("players: ", message);
             this.setState({
                 loaded: true,
@@ -140,7 +140,7 @@ class LobbyRoute extends React.Component {
 
         // If a new player joins the lobby, we should update the player
         // list
-        socket.on(events.NEW_PLAYER, (message) => {
+        socket.on(ServerEvents.NEW_PLAYER, (message) => {
             this.setState((oldState) => {
                 return {
                     lobby: {
@@ -153,12 +153,12 @@ class LobbyRoute extends React.Component {
         });
 
         // set the lobby stage to 'countdown'
-        socket.on(events.COUNTDOWN, () => {
+        socket.on(ServerEvents.COUNTDOWN, () => {
             this.setState({stage: game.GameState.STARTED});
         });
 
         // set the lobby stage to 'game'
-        socket.on(events.GAME_STARTED, () => {
+        socket.on(ServerEvents.GAME_STARTED, () => {
             this.setState({stage: game.GameState.PLAYING});
         });
 
@@ -199,9 +199,9 @@ class LobbyRoute extends React.Component {
                 />
                 {loaded ? (
                     <>
-                        {stage === game.GameState.WAITING && <WaitingRoom {...this.state} />}
-                        {stage === game.GameState.STARTED && <CountDown/>}
-                        {stage === game.GameState.PLAYING && <Game {...this.state} />}
+                        {stage === GameStatus.WAITING && <WaitingRoom {...this.state} />}
+                        {stage === GameStatus.STARTED && <CountDown/>}
+                        {stage === GameStatus.PLAYING && <Game {...this.state} />}
                     </>
                 ) : (
                     <LoadingScreen><b>Joining Lobby...</b></LoadingScreen>
