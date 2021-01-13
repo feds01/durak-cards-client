@@ -154,12 +154,12 @@ class LobbyRoute extends React.Component {
 
         // set the lobby stage to 'countdown'
         socket.on(ServerEvents.COUNTDOWN, () => {
-            this.setState({stage: game.GameState.STARTED});
+            this.setState({stage: GameStatus.STARTED});
         });
 
         // set the lobby stage to 'game'
         socket.on(ServerEvents.GAME_STARTED, () => {
-            this.setState({stage: game.GameState.PLAYING});
+            this.setState({stage: GameStatus.PLAYING});
         });
 
         this.setState({socket, pin});
