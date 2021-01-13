@@ -62,7 +62,7 @@ export async function login(name, password) {
 export async function register(email, name, password) {
     const payload = JSON.stringify({email, name, password});
 
-    return await fetch(API_ENDPOINT + `user/register`, {
+    return await fetch(API_ENDPOINT + `/user/register`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json'
