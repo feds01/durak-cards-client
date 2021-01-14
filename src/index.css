@@ -11,6 +11,7 @@ html, body {
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
     background-color: #3b3d54;
     font-size: 14px;
     display: flex;
