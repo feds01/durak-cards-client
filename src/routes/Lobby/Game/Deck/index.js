@@ -1,13 +1,15 @@
+import clsx from "clsx";
+import Card from "../Card";
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from './index.module.scss';
-import clsx from "clsx";
-import Card from "../Card";
 
 const Deck = props => {
     return (
-        <div className={clsx(props.className)}>
+        <div className={clsx(styles.Container, props.className)}>
+            <b>{props.count}</b>
             <Card
+                draggable={false}
                 className={clsx({
                     [styles.TrumpCard]: props.count > 1,
                     [styles.TopCard]: props.count <= 1,
@@ -19,6 +21,7 @@ const Deck = props => {
 
             {props.count > 1 && (
                 <Card
+                    draggable={false}
                     className={styles.TopCard}
                     src={process.env.PUBLIC_URL + `/cards/back.svg`}
                     useBackground

@@ -136,7 +136,6 @@ class LobbyRoute extends React.Component {
         // if the client is successfully authenticated and joined the lobby
         // on the server, then we can begin to load the lobby...
         socket.on(ClientEvents.JOINED_GAME, (message) => {
-            // console.log("players: ", message);
             this.setState({
                 loaded: true,
                 ...message,
@@ -195,7 +194,7 @@ class LobbyRoute extends React.Component {
     }
 
     render() {
-        const {loaded, error, stage, shouldBlockNavigation} = this.state;
+        const {loaded, stage, shouldBlockNavigation} = this.state;
 
         return (
             <>

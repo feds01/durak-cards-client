@@ -10,13 +10,14 @@ const Card = props => {
             {...(props.style && {style: props.style})}
             className={clsx(props.className, styles.Container)}>
             {props.useBackground && (
-                <CardImage name={props.value} src={props.src}/>
+                <CardImage draggable={props.draggable} name={props.value} src={props.src}/>
             )}
         </div>
     );
 };
 
 Card.propTypes = {
+    draggable: PropTypes.bool,
     useBackground: PropTypes.bool.isRequired,
     value: PropTypes.string.isRequired,
     src: PropTypes.string,
@@ -25,6 +26,7 @@ Card.propTypes = {
 };
 
 Card.defaultProps = {
+    draggable: true,
     value: "",
     src: "",
     useBackground: false

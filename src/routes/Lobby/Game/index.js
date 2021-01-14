@@ -311,6 +311,12 @@ export default class Game extends React.Component {
     }
 
     componentDidMount() {
+
+        // The user refreshed the page and maybe re-joined
+        if (this.props.game !== null) {
+            this.handleGameStateUpdate(this.props.game);
+        }
+
         // Common event for processing any player actions taken...
         // @@Depreciated this should be removed as the initial state of the game
         // should be transferred on the 'started_game' event.
@@ -337,17 +343,19 @@ export default class Game extends React.Component {
         }
 
         // count the number of items that were inserted in the previous regions
-        const offset = regionOrder.slice(0, region.indexOf(region)).reduce((acc, value) => {
+        const offset = regionOrder.slice(0, regionOrder.indexOf(region)).reduce((acc, value) => {
             // Don't add anything to the accumulator if the region isn't being used for the
             // current player count.
-            if (!Object.keys(AvatarGridLayout[players.length]).includes(value)) {
+            if (!Object.keys(layout).includes(value)) {
                 return acc;
             }
 
-            return acc + AvatarGridLayout[players.length][value];
+            return acc + layout[value];
         }, 0);
 
-        return players.slice(offset, layout[region]).map((player, index) => {
+        console.log(offset, offset + layout[region])
+
+        return players.slice(offset, offset + layout[region]).map((player, index) => {
             return <Player {...player} key={index}/>
         });
     }
