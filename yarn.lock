@@ -10610,7 +10610,7 @@ shallow-clone@^3.0.0:
 
 "shared@git+https://github.com/feds01/durak-cards-shared#master":
   version "1.0.0"
-  resolved "git+https://github.com/feds01/durak-cards-shared#b692fb0b90d8b9e6532f27ad85f34d1232337cdd"
+  resolved "git+https://github.com/feds01/durak-cards-shared#66bd94760875cfc71b02c9fb7ad223711160fa54"
 
 shebang-command@^1.2.0:
   version "1.2.0"

@@ -28,7 +28,7 @@ StatusIcon.propTypes = {
     isDefending: PropTypes.bool.isRequired,
 }
 
-const StatusBadge = withStyles((theme) => ({
+const StatusBadge = withStyles(() => ({
     badge: {
         width: 20,
         height: 20,
@@ -51,6 +51,7 @@ const Player = props => {
                 <Avatar
                     alt={props.name}
                     className={clsx(styles.Avatar, {
+                        [styles.Starting]: props.beganRound && !props.turned,
                         [styles.Turned]: props.turned && !props.out,
                         [styles.Out]: props.out,
                     })}
@@ -58,14 +59,14 @@ const Player = props => {
                     <PersonIcon/>
                 </Avatar>
             </StatusBadge>
-            <span className={styles.Text}>{props.name} - {props.size}</span>
+            <span className={styles.Text}>{props.name} - {props.deck}</span>
         </div>
     );
 };
 
 Player.propTypes = {
     name: PropTypes.string.isRequired,
-    size: PropTypes.number.isRequired,
+    deck: PropTypes.number.isRequired,
     isDefending: PropTypes.bool.isRequired,
     out: PropTypes.any,
     turned: PropTypes.bool,

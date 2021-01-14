@@ -1,10 +1,12 @@
 import React from 'react';
+import * as Yup from "yup";
+import PropTypes from "prop-types";
 import {Form, Formik} from "formik";
-import Input from "../Input";
 import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
+
+import Input from "../Input";
 import {getLobby} from "../../utils/networking";
-import * as Yup from "yup";
 
 const PinSchema = Yup.object().shape({
     pin: Yup.string().matches(/^\d{6}$/g, "Game PIN is 6 digits long."),
@@ -14,6 +16,7 @@ const GamePin = (props) => {
     return (
         <Formik
             initialValues={{pin: ''}}
+            {...props.error && {initialErrors: {pin: props.error}}}
             validateOnChange={false}
             validationSchema={PinSchema}
             onSubmit={async (values, {setSubmitting, setErrors}) => {
@@ -74,5 +77,10 @@ const GamePin = (props) => {
         </Formik>
     );
 };
+
+GamePin.propTypes = {
+    error: PropTypes.string,
+    onSuccess: PropTypes.func.isRequired,
+}
 
 export default GamePin;

@@ -12,6 +12,7 @@ import CardHolder from "./CardHolder";
 import VictoryDialog from "./Victory";
 import PlayerActions from "./PlayerActions";
 import {ClientEvents, MoveTypes, parseCard, ServerEvents} from "shared";
+import {arraysEqual, deepEqual} from "../../../utils/equal";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -48,7 +49,7 @@ function canPlaceOnPrevious(index, tableTop) {
     return false;
 }
 
-function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
+function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, defender) {
     const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
     const attackingCard = parseCard(card);
 
@@ -79,6 +80,17 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit) {
         if (tableTop[pos].length !== 0) {
             return false;
         }
+
+        // count the number of 'placed' and 'uncovered' cards on the table, if adding
+        // one more to the table will result in there being more cards than the defender
+        // can cover, we should prevent the placement here.
+        const uncoveredCount = tableTop.reduce((acc, value) => {
+            return value.length === 1 ? acc + 1 : acc;
+        }, 0);
+
+        console.log(uncoveredCount + 1 > defender.deck);
+
+        if (uncoveredCount + 1 > defender.deck) return false;
 
         // special case where the number of cards is zero.
         return allNumerics.size === 0 || allNumerics.has(attackingCard.value);
@@ -132,17 +144,19 @@ export default class Game extends React.Component {
         super(props)
 
         this.state = {
-            deck: [],
-            turned: false,
-            out: false,
-            canAttack: false,
-            isDefending: false,
-            trumpCard: null,
-            canPlaceMap: Game.EmptyPlaceMap,
-            tableTop: Array.from(Array(6), () => []),
-            players: [],
+            game: {
+                deck: [],
+                turned: false,
+                out: false,
+                canAttack: false,
+                isDefending: false,
+                trumpCard: null,
+                tableTop: Array.from(Array(6), () => []),
+                players: [],
+            },
 
             // State related to UI
+            canPlaceMap: Game.EmptyPlaceMap,
             showVictory: false,
             isDragging: false,
             queuedUpdates: [],
@@ -167,21 +181,26 @@ export default class Game extends React.Component {
     canForfeit() {
 
         // player cannot skip if no cards are present on the table top.
-        if (this.state.tableTop.flat().length === 0) {
+        if (this.state.game.tableTop.flat().length === 0) {
             return false;
         }
 
-        return !this.state.turned && !this.state.out;
+        return !this.state.game.turned && !this.state.game.out;
     }
 
     onBeforeCapture(event) {
-        const {isDefending, trumpCard, tableTop, deck} = this.state;
+        const {isDefending, trumpCard, canAttack, tableTop, deck} = this.state.game;
 
         const card = deck[parseInt(event.draggableId.split("-")[1])];
 
+        // get our defender to check for the corner case where there would be
+        // more cards on the table top than the defender could cover.
+        const defender = this.state.game.players.find((p) => p.isDefending);
+
         this.setState({
             canPlaceMap: Object.keys(tableTop).map((item, index) => {
-                return canPlaceCard(card.value, index, tableTop, isDefending, trumpCard.suit);
+                return (!isDefending === canAttack) &&
+                    canPlaceCard(card.value, index, tableTop, isDefending, trumpCard.suit, defender);
             })
         });
     }
@@ -198,25 +217,28 @@ export default class Game extends React.Component {
             // reset the canPlaceMap for new cards
             return this.setState({
                 isDragging: false,
-                canPlaceMap: Array.from(Array(6), () => true),
+                canPlaceMap: Game.EmptyPlaceMap,
             });
         }
 
         switch (source.droppableId) {
             case destination.droppableId:
-                this.setState({
+                this.setState(prevState => ({
                     isDragging: false,
-                    deck: reorder(
-                        this.state.deck,
-                        source.index,
-                        destination.index
-                    ),
-                    canPlaceMap: Array.from(Array(6), () => true),
-                });
+                    canPlaceMap: Game.EmptyPlaceMap,
+                    game: {
+                        ...prevState.game,
+                        deck: reorder(
+                            this.state.game.deck,
+                            source.index,
+                            destination.index
+                        ),
+                    },
+                }));
                 break;
             default:
                 if (destination.droppableId.startsWith("holder-")) {
-                    const {isDefending, tableTop, deck} = this.state;
+                    const {isDefending, tableTop, deck} = this.state.game;
 
                     // get the index and check if it currently exists on the table top
                     const index = parseInt(destination.droppableId.split("-")[1]);
@@ -231,15 +253,18 @@ export default class Game extends React.Component {
                         destination
                     )
 
-                    const resultantTableTop = this.state.tableTop;
+                    const resultantTableTop = tableTop;
                     resultantTableTop[index] = result.dest;
 
-                    this.setState({
+                    this.setState(prevState => ({
                         isDragging: false,
-                        canPlaceMap: Array.from(Array(6), () => true),
-                        deck: result.src,
-                        tableTop: resultantTableTop
-                    });
+                        canPlaceMap: Game.EmptyPlaceMap,
+                        game: {
+                            ...prevState.game,
+                            deck: result.src,
+                            tableTop: resultantTableTop
+                        },
+                    }));
 
                     // emit a socket event to notify that the player has made a move...
                     this.props.socket.emit(ServerEvents.MOVE, {
@@ -260,6 +285,20 @@ export default class Game extends React.Component {
 
                 break;
         }
+    }
+
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+
+        // if game state changes... we should update
+        if (!deepEqual(this.state.game, nextState.game)) {
+            return true;
+        }
+
+        // we should also update if any of the following updates... canPlaceMap and showVictory
+        // Essentially we are avoiding a re-render on 'isDragging' or 'queuedUpdates' changing.
+        return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) || this.state.showVictory !== nextState.showVictory;
+
+
     }
 
     handleGameStateUpdate(update) {
@@ -290,6 +329,32 @@ export default class Game extends React.Component {
             });
         });
 
+        // Let's be intelligent about how we update the cards since we want avoid 2 things:
+        //
+        //      1). Avoid flickering when re-rendering cards whilst they are the same.
+        //
+        //      2). Respect the user's order of the cards. A user might re-shuffle their
+        //          cards for convenience and therefore we should respect the order instead
+        //          of brutishly overwriting it with the server's game state.
+        //
+        const newDeck = new Set(update.deck);
+        const currentDeck = this.state.game.deck.map((card) => card.value);
+        let deckUpdate = this.state.game.deck.concat();
+
+
+        // avoid even updating cards if the userCards are equal
+        if (!arraysEqual(currentDeck, update.deck)) {
+
+            // take the intersection of the current deck and the updated new deck
+            let intersection = new Set([...currentDeck].filter(x => newDeck.has(x)));
+            let diff = new Set([...newDeck].filter(x => !intersection.has(x)));
+
+            deckUpdate = [...intersection, ...diff].map((card) => {
+                return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
+            });
+        }
+
+
         // TODO: move deckSize into protocol
         // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards
         // on the tableTop.
@@ -300,20 +365,19 @@ export default class Game extends React.Component {
         }
 
         this.setState({
-            ...update,
-            tableTop: tableTop,
+            game: {
+                ...update,
+                tableTop: tableTop,
 
-            // overwrite the card value with a value and an image source...
-            deck: update.deck.map((card) => {
-                return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
-            })
+                // overwrite the card value with a value and an image source...
+                deck: deckUpdate,
+            },
         });
     }
 
     componentDidMount() {
-
         // The user refreshed the page and maybe re-joined
-        if (this.props.game !== null) {
+        if (this.props.game !== null && typeof this.props.game !== 'undefined') {
             this.handleGameStateUpdate(this.props.game);
         }
 
@@ -334,7 +398,7 @@ export default class Game extends React.Component {
     renderPlayerRegion(region) {
         const regionOrder = ['players-left', 'players-top', 'players-right'];
 
-        const {players} = this.state;
+        const {players} = this.state.game;
         const layout = AvatarGridLayout[players.length];
 
         // don't do anything if no players are currently present or the region isn't being used.
@@ -353,8 +417,6 @@ export default class Game extends React.Component {
             return acc + layout[value];
         }, 0);
 
-        console.log(offset, offset + layout[region])
-
         return players.slice(offset, offset + layout[region]).map((player, index) => {
             return <Player {...player} key={index}/>
         });
@@ -362,7 +424,7 @@ export default class Game extends React.Component {
 
     render() {
         const {socket, lobby} = this.props;
-        const {deck, out, deckSize, isDefending, trumpCard, canPlaceMap, tableTop} = this.state;
+        const {deck, out, deckSize, isDefending, trumpCard, tableTop} = this.state.game;
 
         return (
             <>
@@ -391,7 +453,7 @@ export default class Game extends React.Component {
                         <Table
                             className={styles.GameTable}
                             hand={deck}
-                            placeMap={canPlaceMap}
+                            placeMap={this.state.canPlaceMap}
                             tableTop={tableTop}
                             isDefending={isDefending}
                         >
@@ -422,4 +484,5 @@ Game.propTypes = {
     isHost: PropTypes.bool.isRequired,
     pin: PropTypes.string.isRequired,
     lobby: PropTypes.object.isRequired,
+    game: PropTypes.object,
 };

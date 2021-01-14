@@ -21,6 +21,10 @@
     background: #1a1d3d;
     border: 2px white solid;
 
+    &.Starting {
+      border: 2px red solid;
+    }
+
     &.Turned {
       border: 2px green solid;
     }

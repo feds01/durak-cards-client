@@ -57,7 +57,7 @@ class Prompt extends React.Component {
                         });
                     }
                 } else {
-                    this.onError();
+                    this.onError(res.message);
                 }
             });
         }
@@ -94,16 +94,18 @@ class Prompt extends React.Component {
         }
     }
 
-    onError() {
+    onError(message) {
         this.setState({
             name: "",
             pin: null,
-            stage: "pin"
+            error: message,
+            stage: "pin",
+            showStages: true,
         });
     }
 
     render() {
-        const {stage, showStages, name, with2FA, nodeRef, pin} = this.state;
+        const {stage, showStages, name, error, with2FA, nodeRef, pin} = this.state;
 
         // Essentially we first render the game pin if the stage is equal to 'pin'. If the 'pin' stage
         // returns a query to progress to the next stage, then we push it to the next stage of 'security'.
@@ -111,21 +113,23 @@ class Prompt extends React.Component {
         // the lobby.
         return (
             <div className={clsx(this.props.className)}>
-                {showStages && stage === 'pin' && <GamePin onSuccess={async (pin) => {
-                    this.setState({pin});
+                {showStages && stage === 'pin' && <GamePin
+                    {...error && {error}}
+                    onSuccess={async (pin) => {
+                        this.setState({pin});
 
-                    // if the user is logged in with some account, attempt to authenticate them
-                    // by using their credentials
-                    if (hasAuthTokens()) {
-                        if (!with2FA) {
-                            await this.onSubmit();
+                        // if the user is logged in with some account, attempt to authenticate them
+                        // by using their credentials
+                        if (hasAuthTokens()) {
+                            if (!with2FA) {
+                                await this.onSubmit();
+                            } else {
+                                this.setState({stage: 'security'});
+                            }
                         } else {
-                            this.setState({stage: 'security'});
+                            this.setState({pin: pin, stage: 'name'});
                         }
-                    } else {
-                        this.setState({pin: pin, stage: 'name'});
-                    }
-                }}/>}
+                    }}/>}
                 {showStages && stage === 'name' && <GameName pin={pin} onSuccess={async (name) => {
                     this.setState({name});
 
