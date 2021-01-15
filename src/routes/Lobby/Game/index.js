@@ -49,9 +49,17 @@ function canPlaceOnPrevious(index, tableTop) {
     return false;
 }
 
-function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, defender) {
+function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, playerRef) {
     const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
     const attackingCard = parseCard(card);
+
+    // count the number of 'placed' and 'uncovered' cards on the table, if adding
+    // one more to the table will result in there being more cards than the defender
+    // can cover, we should prevent the placement here.
+    const uncoveredCount = tableTop.reduce((acc, value) => {
+        return value.length === 1 ? acc + 1 : acc;
+    }, 0);
+
 
     if (isDefending) {
 
@@ -59,8 +67,10 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, defender) {
         if (!canPlaceOnPrevious(pos, tableTop) &&
             tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
-            allNumerics.has(attackingCard.value)
-            // TODO: and the next player has enough cards to cover the table
+            allNumerics.has(attackingCard.value) &&
+
+            // the next player has enough cards to cover the table
+            playerRef.deck >= uncoveredCount + 1
         ) {
             return true;
         }
@@ -82,14 +92,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, defender) {
             return false;
         }
 
-        // count the number of 'placed' and 'uncovered' cards on the table, if adding
-        // one more to the table will result in there being more cards than the defender
-        // can cover, we should prevent the placement here.
-        const uncoveredCount = tableTop.reduce((acc, value) => {
-            return value.length === 1 ? acc + 1 : acc;
-        }, 0);
-
-        if (uncoveredCount + 1 > defender.deck) return false;
+        if (uncoveredCount + 1 > playerRef.deck) return false;
 
         // special case where the number of cards is zero.
         return allNumerics.size === 0 || allNumerics.has(attackingCard.value);
@@ -136,7 +139,6 @@ const AvatarGridLayout = {
 
 
 export default class Game extends React.Component {
-
     static EmptyPlaceMap = Array.from(Array(6), () => true);
 
     constructor(props) {
@@ -178,11 +180,17 @@ export default class Game extends React.Component {
      * game state.
      * */
     canForfeit() {
-
         // player cannot skip if no cards are present on the table top.
         if (this.state.game.tableTop.flat().length === 0) {
             return false;
         }
+
+        const uncoveredCount = this.state.game.tableTop.reduce((acc, value) => {
+            return value.length === 1 ? acc + 1 : acc;
+        }, 0);
+
+        // Case for defender when they have covered all the cards.
+        if (uncoveredCount === 0 && this.state.game.isDefending) return false;
 
         return !this.state.game.turned && !this.state.game.out;
     }
@@ -192,14 +200,24 @@ export default class Game extends React.Component {
 
         const card = deck[parseInt(event.draggableId.split("-")[1])];
 
-        // get our defender to check for the corner case where there would be
-        // more cards on the table top than the defender could cover.
-        const defender = this.state.game.players.find((p) => p.isDefending);
+        // This is used for some more advanced checking if cards can be
+        // placed down by the current player. All of the logic is internally
+        // handled by the canPLaceCard function, however the player reference
+        // depends on whether this is the defending or attacking player.
+        let nextPlayer;
+
+        if (isDefending) {
+            nextPlayer = this.state.game.players.find(p => !p.out);
+        } else {
+            // get our defender to check for the corner case where there would be
+            // more cards on the table top than the defender could cover.
+            nextPlayer = this.state.game.players.find((p) => p.isDefending);
+        }
 
         this.setState({
             canPlaceMap: Object.keys(tableTop).map((item, index) => {
                 return (!isDefending === canAttack) &&
-                    canPlaceCard(card.value, index, tableTop, isDefending, trumpCard.suit, defender);
+                    canPlaceCard(card.value, index, tableTop, isDefending, trumpCard.suit, nextPlayer);
             })
         });
     }
@@ -296,12 +314,9 @@ export default class Game extends React.Component {
         // we should also update if any of the following updates... canPlaceMap and showVictory
         // Essentially we are avoiding a re-render on 'isDragging' or 'queuedUpdates' changing.
         return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) || this.state.showVictory !== nextState.showVictory;
-
-
     }
 
     handleGameStateUpdate(update) {
-
         // prevent updates from being applied to table-top or user deck whilst a drag
         // event is occurring. We can attempt to merge the 'state' after the drag update
         // completes gracefully or not. If the state merge fails, we can always ask the
@@ -423,7 +438,7 @@ export default class Game extends React.Component {
 
     render() {
         const {socket, lobby} = this.props;
-        const {deck, out, deckSize, isDefending, trumpCard, tableTop} = this.state.game;
+        const {deck, out, deckSize, canAttack, isDefending, trumpCard, tableTop} = this.state.game;
 
         return (
             <>
@@ -466,6 +481,7 @@ export default class Game extends React.Component {
                         <CardHolder cards={deck} className={styles.GameFooter}>
                             <PlayerActions
                                 socket={socket}
+                                canAttack={canAttack}
                                 out={out}
                                 canForfeit={this.canForfeit()}
                                 isDefending={isDefending}

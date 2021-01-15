@@ -15,9 +15,10 @@ import Game from "./Game";
 import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
 import {SOCKET_ENDPOINT} from "../../config";
+import ErrorContainer from "./ErrorContainer";
 import LoadingScreen from "../../components/LoadingScreen";
-import {clearTokens, getAuthTokens, updateTokens} from "../../utils/auth";
 import {ClientEvents, error, GameStatus, ServerEvents} from "shared";
+import {clearTokens, getAuthTokens, updateTokens} from "../../utils/auth";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -206,7 +207,11 @@ class LobbyRoute extends React.Component {
                     <>
                         {stage === GameStatus.WAITING && <WaitingRoom {...this.state} />}
                         {stage === GameStatus.STARTED && <CountDown/>}
-                        {stage === GameStatus.PLAYING && <Game {...this.state} />}
+                        {stage === GameStatus.PLAYING && (
+                            <ErrorContainer>
+                                <Game {...this.state} />
+                            </ErrorContainer>
+                        )}
                     </>
                 ) : (
                     <LoadingScreen><b>Joining Lobby...</b></LoadingScreen>

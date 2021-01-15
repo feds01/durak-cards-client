@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# Durachok
+### React client for the Russian card game 'Durak'
+![Durachok Game table](./docs/table.png "Table")
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

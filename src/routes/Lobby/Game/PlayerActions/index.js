@@ -17,7 +17,7 @@ const PlayerActions = props => {
             setStatusText(props.isDefending ? "DEFENDING" : (props.canAttack ? "ATTACKING" : "WAITING"));
         }
 
-    }, [props.isDefending, props.out]);
+    }, [props.isDefending, props.canAttack, props.out]);
 
 
     function sendForfeit() {

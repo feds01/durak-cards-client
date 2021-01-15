@@ -1,0 +1,19 @@
+.Error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  height: 100%;
+  width: 100%;
+
+  & .ErrorMessage {
+    word-break: break-all;
+  }
+
+  & p {
+    font-family: 'Cabin', sans-serif;
+    display: inline-block;
+    vertical-align: middle;
+  }
+}

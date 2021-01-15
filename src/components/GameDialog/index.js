@@ -19,7 +19,7 @@ const GameDialog = (props) => {
     return (
         <Dialog {...props}>
             <Formik
-                initialValues={{roundTimeout: 300, maxPlayers: 2, with2FA: false}}
+                initialValues={{roundTimeout: 300, maxPlayers: 4, with2FA: false}}
                 onSubmit={async (values, {setSubmitting}) => {
                     await createGame(values).then((res) => {
                         if (!res.status) {
