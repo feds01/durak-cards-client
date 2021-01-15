@@ -59,7 +59,7 @@ const Player = props => {
                     <PersonIcon/>
                 </Avatar>
             </StatusBadge>
-            <span className={styles.Text}>{props.name} - {props.deck}</span>
+            <span className={styles.Text}>{props.name} {!props.out && (`- ${props.deck}`)}</span>
         </div>
     );
 };

@@ -11,26 +11,27 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Zoom in ref={ref} {...props} />;
 });
 
+// Maybe move into a manifest file
+const encouragements = ["Better luck next time!", "Better than defeat.", "The card weren't in your favour"]
 
 const VictoryDialog = props => {
     const [open, setOpen] = useState(true);
 
-    const [title, setTitle] = useState("");
+    const [title, setTitle] = useState("Victory!");
     const [encouragement, setEncouragement] = useState("");
 
     useEffect(() => {
         if (props.players[0].name !== props.name) {
-            setTitle("Defeat!");
+            // check if this player is the 'durak'
+            if (props.players[props.players.length - 1].name === props.name) {
+                setTitle("Defeat!");
+                setEncouragement("Durak!");
+            } else {
+                setTitle("Close!")
+                setEncouragement(encouragements[Math.floor(Math.random() * encouragements.length)])
+            }
+        } else {
             setEncouragement("Well done");
-        } else {
-            setTitle("Victory!");
-        }
-
-        // check if they are the 'durak'
-        if (props.players[props.players.length - 1].name === props.name) {
-            setEncouragement("Durak!");
-        } else {
-            setEncouragement("Better luck next time.")
         }
 
     }, [props.name, props.players]);

@@ -14,7 +14,7 @@ const PlayerActions = props => {
         if (props.out) {
             setStatusText("VICTORY");
         } else {
-            setStatusText(props.isDefending ? "DEFENDING" : "ATTACKING");
+            setStatusText(props.isDefending ? "DEFENDING" : (props.canAttack ? "ATTACKING" : "WAITING"));
         }
 
     }, [props.isDefending, props.out]);
@@ -34,7 +34,7 @@ const PlayerActions = props => {
                 disabled={!props.canForfeit}
                 endIcon={<ClearIcon/>}
             >
-                skip
+                {props.isDefending ? "forfeit" : "skip"}
             </Button>
 
             <div className={styles.Status}>
@@ -51,6 +51,7 @@ PlayerActions.propTypes = {
     out: PropTypes.bool.isRequired,
     isDefending: PropTypes.bool.isRequired,
     canForfeit: PropTypes.bool.isRequired,
+    canAttack: PropTypes.bool.isRequired,
     socket: PropTypes.object.isRequired,
 };
 
