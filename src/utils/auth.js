@@ -1,7 +1,7 @@
 /**
  * Function to get the token and refresh token from the localstorage.
  *
- *  * @return {{"token": ?String, "refreshToken": ?String}} the tokens.
+ * @return {{"token": ?String, "refreshToken": ?String}} the tokens.
  * */
 export function getAuthTokens() {
     const token = localStorage.getItem("token");

@@ -5,12 +5,12 @@ const Input = (inputProps) => {
     return (
         <TextField
             {...inputProps}
+            fullWidth
             inputProps={{
                 style:
                     {
                         textAlign: 'center',
                         color: '#dad8ec',
-                        width: 360,
                         fontSize: 20,
                         letterSpacing: 2
                     }
@@ -18,6 +18,6 @@ const Input = (inputProps) => {
             variant={'filled'}
         />
     );
-};
+}
 
 export default Input;

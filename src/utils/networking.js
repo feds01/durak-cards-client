@@ -59,8 +59,8 @@ export async function login(name, password) {
     }).then(res => res.json());
 }
 
-export async function register(email, name, password) {
-    const payload = JSON.stringify({email, name, password});
+export async function register(email, name, password, token) {
+    const payload = JSON.stringify({email, name, password, token});
 
     return await fetch(API_ENDPOINT + `/user/register`, {
         method: "POST",

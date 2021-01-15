@@ -7,7 +7,7 @@ import './index.scss';
 import GamePin from "./GamePin";
 import GameName from "./GameName";
 import GamePassphrase from "./GamePassphrase";
-import {hasAuthTokens, updateTokens} from "../../utils/auth";
+import {clearTokens, hasAuthTokens, updateTokens} from "../../utils/auth";
 import {getLobby, joinLobby} from "../../utils/networking";
 
 
@@ -89,15 +89,18 @@ class Prompt extends React.Component {
 
             this.props.history.push(`/lobby/${pin}`);
         } else {
-            // wait a second to register error message and then re-direct to home page
-            this.onError();
+            // Attempt to join without tokens since they might be anonymous user tokens
+            // for a different game. Try and clear the token, then ask the user to join
+            // with a name...
+            clearTokens();
+            this.setState({pin: pin, stage: 'name'});
         }
     }
 
-    onError(message) {
+    onError(message = null, pin = null) {
         this.setState({
             name: "",
-            pin: null,
+            pin: pin,
             error: message,
             stage: "pin",
             showStages: true,

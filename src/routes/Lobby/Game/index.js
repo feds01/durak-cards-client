@@ -60,6 +60,7 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, defender) {
             tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
             allNumerics.has(attackingCard.value)
+            // TODO: and the next player has enough cards to cover the table
         ) {
             return true;
         }
@@ -87,8 +88,6 @@ function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, defender) {
         const uncoveredCount = tableTop.reduce((acc, value) => {
             return value.length === 1 ? acc + 1 : acc;
         }, 0);
-
-        console.log(uncoveredCount + 1 > defender.deck);
 
         if (uncoveredCount + 1 > defender.deck) return false;
 

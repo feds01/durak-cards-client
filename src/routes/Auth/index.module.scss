@@ -11,6 +11,7 @@
     padding: 5em 2em;
     border-radius: 12px;
 
+    width: 480px;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
@@ -25,7 +26,7 @@
       font-family: 'Cabin', sans-serif;
     }
 
-    & p {
+    & .Alternative {
       color: white;
       font-size: 15px;
 
@@ -34,4 +35,8 @@
       }
     }
   }
+}
+
+.Captcha {
+  margin: 1em 0;
 }

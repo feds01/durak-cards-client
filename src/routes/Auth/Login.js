@@ -114,7 +114,9 @@ const LoginRoute = () => {
                                     {isSubmitting ?
                                         <Loader type="ThreeDots" color="#FFFFFF" height={20} width={40}/> : "Login"}
                                 </Button>
-                                <p>New User? Create account <Link to={"/register"}>here</Link></p>
+                                <p className={styles.Alternative}>
+                                    New User? Create account <Link to={"/register"}>here</Link>
+                                </p>
                             </div>
                         </motion.div>
                     </div>
