@@ -2,7 +2,7 @@ import React from 'react';
 import clsx from "clsx";
 import PropTypes from 'prop-types';
 import styles from "./index.module.scss";
-import {Draggable, Droppable} from "react-beautiful-dnd";
+import {Droppable} from "react-beautiful-dnd";
 
 import Card from "../Card";
 
@@ -25,27 +25,14 @@ const AttackingDrop = props => {
                     >
                         {
                             props.card && (
-                                <Draggable
-                                    isDragDisabled={true}
-                                    draggableId={`card-holder-${props.index}`}
-                                    key={`card-holder-${props.index}`}
-                                    index={props.index}>
-                                    {(dragProvided, dragSnapshot) => (
-                                        <div
-                                            {...dragProvided.draggableProps}
-                                            ref={dragProvided.innerRef}
-                                        >
-                                            <Card
-                                                // If an item was added to the card holder, use that
-                                                // value...
-                                                {...(props.card && {
-                                                    ...props.card,
-                                                    useBackground: true
-                                                })}
-                                            />
-                                        </div>
-                                    )}
-                                </Draggable>
+                                <Card
+                                    // If an item was added to the card holder, use that
+                                    // value...
+                                    {...(props.card && {
+                                        ...props.card,
+                                        useBackground: true
+                                    })}
+                                />
                             )
                         }
                         {provided.placeholder}

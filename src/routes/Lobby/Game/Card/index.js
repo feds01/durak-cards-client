@@ -26,7 +26,7 @@ Card.propTypes = {
 };
 
 Card.defaultProps = {
-    draggable: true,
+    draggable: false,
     value: "",
     src: "",
     useBackground: false

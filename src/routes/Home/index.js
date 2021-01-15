@@ -24,7 +24,7 @@ const HomeRoute = () => {
            setPin(location.state.pin);
            history.replace('', null);
        }
-    }, []);
+    }, [location.state.pin, history]);
 
     return (
         <>

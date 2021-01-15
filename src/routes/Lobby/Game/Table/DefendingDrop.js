@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {Draggable, Droppable} from "react-beautiful-dnd";
 import clsx from "clsx";
-import styles from "./index.module.scss";
+import React from 'react';
 import Card from "../Card";
+import PropTypes from 'prop-types';
+import styles from "./index.module.scss";
+import {Droppable} from "react-beautiful-dnd";
 
 const DefendingDrop = props => {
     return (
@@ -35,28 +35,14 @@ const DefendingDrop = props => {
 
                         {
                             props.card && (
-                                // TODO: Add offset
-                                <Draggable
-                                    isDragDisabled={true}
-                                    draggableId={`card-holder-${props.index}`}
-                                    key={`card-holder-${props.index}`}
-                                    index={props.index}>
-                                    {(dragProvided, dragSnapshot) => (
-                                        <div
-                                            {...dragProvided.draggableProps}
-                                            ref={dragProvided.innerRef}
-                                        >
-                                            <Card
-                                                // If an item was added to the card holder, use that
-                                                // value...
-                                                {...(props.card && {
-                                                    ...props.card,
-                                                    useBackground: true
-                                                })}
-                                            />
-                                        </div>
-                                    )}
-                                </Draggable>
+                                <Card
+                                    // If an item was added to the card holder, use that
+                                    // value...
+                                    {...(props.card && {
+                                        ...props.card,
+                                        useBackground: true
+                                    })}
+                                />
                             )
                         }
                         {provided.placeholder}
