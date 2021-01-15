@@ -11,6 +11,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Zoom in ref={ref} {...props} />;
 });
 
+
 const VictoryDialog = props => {
     const [open, setOpen] = useState(true);
 
@@ -39,6 +40,11 @@ const VictoryDialog = props => {
             className={styles.Container}
             open={open}
             TransitionComponent={Transition}
+
+            // fix: https://github.com/feds01/durak-cards/issues/30
+            PaperProps={{
+                style: {background: "none"}
+            }}
             keepMounted
             onClose={() => setOpen(false)}
         >
