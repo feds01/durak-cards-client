@@ -47,23 +47,52 @@ class Table extends React.Component {
 
         return (
             <div className={clsx(this.props.className, styles.Container)}>
-                <div style={{ flexGrow: 1 }}>
+                <div style={{flexGrow: 1}}>
                     <div className={styles.CardGrid}>
                         {
                             tableTop.map((item, index) => {
+                                const shouldBlock = !placeMap[index] && this.checkForFreePreviousSlots(index);
+
+                                // If there are two cards for the current holder, it doesn't matter if the
+                                // player is a defender or not, the render process is identical.
+                                if (item.length === 2) {
+                                    return (
+                                        <div key={index}>
+                                            <Card
+                                                style={{
+                                                    marginRight: 20,
+                                                    position: "absolute",
+                                                    zIndex: 0,
+                                                }}
+                                                {...(item[0] && {
+                                                    ...item[0],
+                                                    useBackground: true
+                                                })}
+                                            />
+                                            <Card
+                                                style={{
+                                                    zIndex: 1,
+                                                    transform: 'rotate(10deg) translateX(10px)'
+                                                }}
+                                                {...item[1]}
+                                                useBackground
+                                            />
+                                        </div>
+                                    )
+                                }
 
                                 // for attacking players:
                                 if (!isDefending) {
 
                                     // render just the card if it's already been placed...
-                                    if (item.length > 0) {
+                                    if (item.length === 1) {
                                         const showBlocking = !placeMap[index] && item.length === 1 && this.checkForFreePreviousSlots(index);
 
                                         return (
                                             <div key={index}
                                                  style={{
                                                      // move to a class
-                                                     marginRight: item.length === 2 ? 20 : 0
+                                                     marginRight: 0
                                                  }}
                                                  className={clsx(styles.Item, {
                                                      [styles.BlockHovering]: showBlocking,
@@ -73,22 +102,9 @@ class Table extends React.Component {
                                                         position: "absolute",
                                                         zIndex: 0,
                                                     }}
-                                                    {...(item[0] && {
-                                                        ...item[0],
-                                                        useBackground: true
-                                                    })}
+                                                    {...item[0]}
+                                                    useBackground
                                                 />
-
-                                                {item[1] && (
-                                                    <Card
-                                                        style={{
-                                                            zIndex: 1,
-                                                            transform: 'rotate(10deg) translateX(10px)'
-                                                        }}
-                                                        {...item[1]}
-                                                        useBackground
-                                                    />
-                                                )}
                                             </div>
                                         );
                                     }
@@ -98,7 +114,7 @@ class Table extends React.Component {
                                             key={index}
                                             canPlace={this.checkForFreePreviousSlots(index) && placeMap[index]}
                                             className={clsx({
-                                                [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
+                                                [styles.BlockHovering]: shouldBlock,
                                             })}
                                             card={item[0]}
                                             index={index}
@@ -107,7 +123,6 @@ class Table extends React.Component {
                                 } else {
                                     // The card has already been covered by the player...
                                     if (item.length === 0) {
-
                                         // edge case where defending player can re-direct the attack...
                                         if (placeMap[index] && index !== 0) {
                                             return (
@@ -115,7 +130,7 @@ class Table extends React.Component {
                                                     key={index}
                                                     canPlace={this.checkForFreePreviousSlots(index)}
                                                     className={clsx({
-                                                        [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
+                                                        [styles.BlockHovering]: shouldBlock,
                                                     })}
                                                     card={item[0]}
                                                     index={index}
@@ -126,48 +141,20 @@ class Table extends React.Component {
                                         // if no cards are currently present on the pile just render a placeholder...
                                         return (
                                             <div key={index} className={clsx(styles.Item, {
-                                                [styles.BlockHovering]: !placeMap[index] && this.checkForFreePreviousSlots(index),
+                                                [styles.BlockHovering]: shouldBlock,
                                             })}>
                                                 <Card/>
                                             </div>
                                         );
                                     }
 
-                                    if (item.length === 2) {
-                                        return (
-                                            <div
-                                                key={index}
-                                                style={{
-                                                    marginRight: 20,
-                                                }}
-                                            >
-                                                <Card
-                                                    style={{
-                                                        position: "absolute",
-                                                        zIndex: 0,
-                                                    }}
-                                                    {...item[0]}
-                                                    useBackground
-                                                />
-                                                <Card
-                                                    style={{
-                                                        zIndex: 1,
-                                                        transform: 'rotate(10deg) translateX(10px)'
-                                                    }}
-                                                    {...item[1]}
-                                                    useBackground
-                                                />
-                                            </div>
-                                        );
-                                    }
-
-                                    return <DefendingDrop
+                                    return (<DefendingDrop
                                         key={index}
                                         canPlace={placeMap[index]}
                                         card={item[1]}
                                         bottomCard={item[0]}
                                         index={index}
-                                    />
+                                    />);
                                 }
                             })
                         }

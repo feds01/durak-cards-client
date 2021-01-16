@@ -57,7 +57,7 @@ class LobbyRoute extends React.Component {
 
         // client-side
         socket.on("connect", () => {
-            socket.emit(ServerEvents.JOIN_GAME, {});
+            socket.emit(ServerEvents.JOIN_GAME);
         });
 
 

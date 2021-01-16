@@ -452,7 +452,7 @@ class Game extends React.Component {
                 {this.state.showVictory && (
                     <VictoryDialog
                         onNext={() => {
-                            socket.emit(ClientEvents.JOIN_GAME, {});
+                            socket.emit(ServerEvents.JOIN_GAME);
                         }}
                         name={lobby.name}
                         players={this.state.playerOrder}
