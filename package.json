@@ -24,6 +24,7 @@
     "react-transition-group": "^4.4.1",
     "shared": "git+https://github.com/feds01/durak-cards-shared#master",
     "socket.io-client": "3.0.4",
+    "use-sound": "^2.0.1",
     "web-vitals": "^0.2.4",
     "yup": "^0.32.8"
   },

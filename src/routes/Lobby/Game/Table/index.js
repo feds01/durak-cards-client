@@ -47,9 +47,7 @@ class Table extends React.Component {
 
         return (
             <div className={clsx(this.props.className, styles.Container)}>
-                <div style={{
-                    flexGrow: 1
-                }}>
+                <div style={{ flexGrow: 1 }}>
                     <div className={styles.CardGrid}>
                         {
                             tableTop.map((item, index) => {

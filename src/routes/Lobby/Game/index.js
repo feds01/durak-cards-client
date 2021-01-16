@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import React from "react";
 import PropTypes from 'prop-types';
+import useSound from "use-sound";
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
 
@@ -11,8 +12,11 @@ import Header from "./Header";
 import CardHolder from "./CardHolder";
 import VictoryDialog from "./Victory";
 import PlayerActions from "./PlayerActions";
-import {ClientEvents, MoveTypes, parseCard, ServerEvents} from "shared";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
+import {ClientEvents, MoveTypes, parseCard, ServerEvents} from "shared";
+
+import place from "./../../../assets/sound/place.mp3";
+import begin from "./../../../assets/sound/begin.mp3";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -138,7 +142,7 @@ const AvatarGridLayout = {
 }
 
 
-export default class Game extends React.Component {
+class Game extends React.Component {
     static EmptyPlaceMap = Array.from(Array(6), () => true);
 
     constructor(props) {
@@ -398,7 +402,10 @@ export default class Game extends React.Component {
         // Common event for processing any player actions taken...
         // @@Depreciated this should be removed as the initial state of the game
         // should be transferred on the 'started_game' event.
-        this.props.socket.on("begin_round", this.handleGameStateUpdate);
+        this.props.socket.on("begin_round", (event) => {
+            this.props.beginRound();
+            this.handleGameStateUpdate(event);
+        });
         this.props.socket.on(ClientEvents.ACTION, this.handleGameStateUpdate);
         this.props.socket.on(ClientEvents.INVALID_MOVE, this.handleGameStateUpdate);
         this.props.socket.on(ClientEvents.VICTORY, (event) => {
@@ -500,4 +507,15 @@ Game.propTypes = {
     pin: PropTypes.string.isRequired,
     lobby: PropTypes.object.isRequired,
     game: PropTypes.object,
+    beginRound: PropTypes.func,
+    placeCard: PropTypes.func,
 };
+
+const WithSound = (props) => {
+    const [beginRound] = useSound(begin, {volume: 0.25});
+    const [placeCard] = useSound(place, {volume: 0.25});
+
+    return <Game {...props} beginRound={beginRound} placeCard={placeCard}/>;
+}
+
+export default WithSound;

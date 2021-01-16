@@ -24,7 +24,8 @@ const HomeRoute = () => {
            setPin(location.state.pin);
            history.replace('', null);
        }
-    }, [location.state.pin, history]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>

@@ -7,6 +7,10 @@ import Button from "@material-ui/core/Button";
 import Avatar from "@material-ui/core/Avatar";
 import PersonIcon from "@material-ui/icons/Person";
 
+import victorySound from "./../../../../assets/sound/victory.mp3";
+import defeatSound from "./../../../../assets/sound/defeat.mp3";
+import useSound from "use-sound";
+
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Zoom in ref={ref} {...props} />;
 });
@@ -16,6 +20,8 @@ const encouragements = ["Better luck next time!", "Better than defeat.", "The ca
 
 const VictoryDialog = props => {
     const [open, setOpen] = useState(true);
+    const [playVictory] = useSound(victorySound, {volume: 0.25});
+    const [playDefeat] = useSound(defeatSound, {volume: 0.25});
 
     const [title, setTitle] = useState("Victory!");
     const [encouragement, setEncouragement] = useState("");
@@ -41,6 +47,7 @@ const VictoryDialog = props => {
             className={styles.Container}
             open={open}
             TransitionComponent={Transition}
+            onEntered={() => props.players[0].name !== props.name ? playDefeat() : playVictory()}
 
             // fix: https://github.com/feds01/durak-cards/issues/30
             PaperProps={{

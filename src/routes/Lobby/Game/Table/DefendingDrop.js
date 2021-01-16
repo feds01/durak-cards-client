@@ -9,7 +9,7 @@ const DefendingDrop = props => {
     return (
         <Droppable
             isDropDisabled={!props.canPlace}
-            type={"CARD"} droppableId={`holder-${props.index}`}>
+            type={props.canPlace ? "CARD" : "DISABLED"} droppableId={`holder-${props.index}`}>
             {(provided, snapshot) => {
                 return (
                     <div
