@@ -89,6 +89,10 @@ class Prompt extends React.Component {
 
             this.props.history.push(`/lobby/${pin}`);
         } else {
+
+            // don't reset the view if this is a lobby with 2fa
+            if (with2FA) return res;
+
             // Attempt to join without tokens since they might be anonymous user tokens
             // for a different game. Try and clear the token, then ask the user to join
             // with a name...
@@ -118,7 +122,7 @@ class Prompt extends React.Component {
             <div className={clsx(this.props.className)}>
                 {showStages && stage === 'pin' && <GamePin
                     {...error && {error}}
-                    onSuccess={async (pin) => {
+                    onSuccess={async ({pin, with2FA}) => {
                         this.setState({pin});
 
                         // if the user is logged in with some account, attempt to authenticate them
@@ -127,10 +131,10 @@ class Prompt extends React.Component {
                             if (!with2FA) {
                                 await this.onSubmit();
                             } else {
-                                this.setState({stage: 'security'});
+                                this.setState({stage: 'security', with2FA});
                             }
                         } else {
-                            this.setState({pin: pin, stage: 'name'});
+                            this.setState({pin: pin, stage: 'name', with2FA});
                         }
                     }}/>}
                 {showStages && stage === 'name' && <GameName pin={pin} onSuccess={async (name) => {

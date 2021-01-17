@@ -100,6 +100,7 @@ const LoginRoute = () => {
                                     onChange={handleChange}
                                 />
                                 <Button
+                                    type={"submit"}
                                     variant={'contained'}
                                     className={'Prompt-enter'}
                                     disableElevation

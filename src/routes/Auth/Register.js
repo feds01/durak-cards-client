@@ -47,9 +47,8 @@ const RegisterRoute = () => {
         if (!res.status) {
             // The server provides us with a map of errors based on the registration request.
             setErrors(res.errors);
-        } else {
             setSubmitting(false);
-
+        } else {
             // set the tokens for this client from the login response object
             updateTokens(res.token, res.refreshToken);
 
@@ -107,7 +106,7 @@ const RegisterForm = (props) => {
                             name={'name'}
                             style={{paddingBottom: "8px"}}
                             placeholder={'Username'}
-                            autocomplete="new-password"
+                            autoComplete="new-password"
                             error={Boolean(errors.name)}
                             helperText={errors.name || ""}
                             value={values.name}
@@ -137,6 +136,7 @@ const RegisterForm = (props) => {
                             />
                         </div>
                         <Button
+                            type={"submit"}
                             variant={'contained'}
                             className={'Prompt-enter'}
                             disableElevation

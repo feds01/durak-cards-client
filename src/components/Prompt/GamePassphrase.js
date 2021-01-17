@@ -13,16 +13,14 @@ const errorMessages = {
 
 const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}) {
     const [order, setOrder] = useState('');
-    const [valid, setValid] = useState("");
+    const [message, setMessage] = useState("");
     const [checking, setChecking] = useState(false);
 
 
     // Register key listener to listen for 'esc' character.
     useEffect(() => {
         function keyListener(event) {
-            if (event.key === "Escape") {
-                setOrder("");
-            }
+            if (event.key === "Escape") setOrder("");
         }
 
         document.addEventListener("keydown", keyListener);
@@ -37,14 +35,14 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
     useEffect(() => {
         let mounted = true;
 
-        if (valid !== "" && !checking && order.length === 4) {
+        if (message !== "" && !checking && order.length === 4) {
             // some other error occurred such as 'LOBBY_FULL', re-direct
             // the user to the home page.
             setTimeout(() => {
                 if (mounted) {
                     setOrder("");
 
-                    if (valid !== "INVALID_PASSPHRASE") {
+                    if (message !== "INVALID_PASSPHRASE") {
                         onError();
                     }
                 }
@@ -52,7 +50,7 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
         }
 
         return () => mounted = false;
-    }, [valid, order, checking, onError]);
+    }, [message, order, checking, onError]);
 
     useEffect(() => {
             let mounted = true;
@@ -66,8 +64,8 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
 
                     const result = await onSubmit(order);
 
-                    if (!result.status && mounted) {
-                        setValid(result.err);
+                    if (!result?.status && mounted) {
+                        setMessage(result.err);
                     }
 
                     if (mounted) setChecking(false);
@@ -84,7 +82,7 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
         <div className={'App-Security'}>
             <p className={'label'}>Security code for: <code>{pin}</code></p>
             <div
-                className={'App-Security-selector' + ((!valid && !checking && order.length === 4) ? ' incorrect' : '')}>
+                className={'App-Security-selector' + ((!message && !checking && order.length === 4) ? ' incorrect' : '')}>
                 {
                     symbols.map((symbol, index) => (
                         <GameSecurityCard
@@ -100,8 +98,8 @@ const GamePassphrase = React.memo(function GameSecurity({pin, onError, onSubmit}
                 {checking && (
                     <Loader type="ThreeDots" color="#ACAABE" height={20} width={40}/>
                 )}
-                {(valid !== "" && !checking && order.length === 4) && (
-                    <p>{errorMessages[valid]}</p>
+                {(message !== "" && !checking && order.length === 4) && (
+                    <p>{errorMessages[message]}</p>
                 )}
             </div>
 

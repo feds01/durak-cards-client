@@ -27,7 +27,7 @@ const GamePin = (props) => {
                         setErrors({pin: res.message});
                     } else {
                         setSubmitting(false);
-                        props.onSuccess(values.pin);
+                        props.onSuccess({...res.data});
                     }
                 });
             }}
