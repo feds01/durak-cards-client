@@ -41,7 +41,7 @@ const Player = props => {
     return (
         <div className={styles.Container}>
             <StatusBadge
-                overlap="circle"
+                overlap="circular"
                 anchorOrigin={{
                     vertical: 'bottom',
                     horizontal: 'right',

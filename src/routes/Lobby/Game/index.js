@@ -233,13 +233,15 @@ class Game extends React.Component {
     onDragEnd(result) {
         const {source, destination} = result;
 
+        // Our error container should catch this
+        // if (1 === 1) {
+        //     throw new Error("I'm an error in onDragEnd");
+        // }
+
         // dropped outside the list
         if (!destination) {
             // reset the canPlaceMap for new cards
-            return this.setState({
-                isDragging: false,
-                canPlaceMap: Game.EmptyPlaceMap,
-            });
+            return this.setState({ isDragging: false, canPlaceMap: Game.EmptyPlaceMap});
         }
 
         switch (source.droppableId) {
@@ -266,13 +268,7 @@ class Game extends React.Component {
 
                     // get a copy of the item that just moved
                     const item = deck[source.index];
-
-                    const result = move(
-                        deck,
-                        tableTop[index],
-                        source,
-                        destination
-                    )
+                    const result = move(deck, tableTop[index], source, destination);
 
                     const resultantTableTop = tableTop;
                     resultantTableTop[index] = result.dest;
