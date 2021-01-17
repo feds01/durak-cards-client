@@ -17,6 +17,7 @@ import {ClientEvents, MoveTypes, parseCard, ServerEvents} from "shared";
 
 import place from "./../../../assets/sound/place.mp3";
 import begin from "./../../../assets/sound/begin.mp3";
+import Announcement from "./Announcement";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -163,6 +164,7 @@ class Game extends React.Component {
             // State related to UI
             canPlaceMap: Game.EmptyPlaceMap,
             showVictory: false,
+            showAnnouncement: false,
             isDragging: false,
             queuedUpdates: [],
         }
@@ -232,11 +234,6 @@ class Game extends React.Component {
 
     onDragEnd(result) {
         const {source, destination} = result;
-
-        // Our error container should catch this
-        // if (1 === 1) {
-        //     throw new Error("I'm an error in onDragEnd");
-        // }
 
         // dropped outside the list
         if (!destination) {
@@ -313,7 +310,9 @@ class Game extends React.Component {
 
         // we should also update if any of the following updates... canPlaceMap and showVictory
         // Essentially we are avoiding a re-render on 'isDragging' or 'queuedUpdates' changing.
-        return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) || this.state.showVictory !== nextState.showVictory;
+        return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) ||
+            this.state.showVictory !== nextState.showVictory ||
+            this.state.showAnnouncement !== nextState.showAnnouncement;
     }
 
     handleGameStateUpdate(update) {
@@ -378,6 +377,7 @@ class Game extends React.Component {
             }
         }
 
+        // TODO: figure out here if we should show an announcement based on the update
         this.setState({
             game: {
                 ...update,
@@ -445,6 +445,9 @@ class Game extends React.Component {
 
         return (
             <>
+                {this.state.showAnnouncement && !this.state.showVictory && (
+                    <Announcement onFinish={() => this.setState({showAnnouncement: false})}>Attacking!</Announcement>
+                )}
                 {this.state.showVictory && (
                     <VictoryDialog
                         onNext={() => {
