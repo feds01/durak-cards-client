@@ -6,7 +6,7 @@ import styles from './index.module.scss';
 const Header = props => {
     return (
         <div className={clsx(props.className, styles.Container)}>
-            {props.countdown}
+            {/*{props.countdown}*/}
         </div>
     );
 };

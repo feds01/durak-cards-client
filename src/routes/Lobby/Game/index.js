@@ -395,11 +395,10 @@ class Game extends React.Component {
             this.handleGameStateUpdate(this.props.game);
         }
 
-        // Common event for processing any player actions taken...
-        // @@Depreciated this should be removed as the initial state of the game
+        // Common event for processing any player actions taken...e
         // should be transferred on the 'started_game' event.
         this.props.socket.on("begin_round", (event) => {
-            this.props.beginRound();
+            this.props.beginRound(); // play gong sound
             this.handleGameStateUpdate(event);
         });
         this.props.socket.on(ClientEvents.ACTION, this.handleGameStateUpdate);
@@ -463,7 +462,7 @@ class Game extends React.Component {
                     onBeforeCapture={this.onBeforeCapture}
                 >
                     <div className={styles.GameContainer}>
-                        <Header className={styles.GameHeader}/>
+                        <Header className={styles.GameHeader} countdown={this.props.lobby.roundTimeout}/>
                         <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
                             {this.renderPlayerRegion("players-top")}
                         </div>

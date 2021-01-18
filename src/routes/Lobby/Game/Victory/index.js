@@ -47,8 +47,11 @@ const VictoryDialog = props => {
             className={styles.Container}
             open={open}
             TransitionComponent={Transition}
-            onEntered={() => props.players[0].name !== props.name ? playDefeat() : playVictory()}
-
+            TransitionProps={{
+                onEntered: () => {
+                    props.players[0].name !== props.name ? playDefeat() : playVictory()
+                }
+            }}
             // fix: https://github.com/feds01/durak-cards/issues/30
             PaperProps={{
                 style: {background: "none"}
