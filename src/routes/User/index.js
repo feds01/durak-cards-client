@@ -14,7 +14,7 @@ import Divider from "@material-ui/core/Divider";
 
 import {hasAuthTokens} from "../../utils/auth";
 import {getUser} from "../../utils/networking";
-import GameDialog from "../../components/GameDialog";
+import GameDialog from "../../components/CreateGameDialog";
 import GameCard from "../../components/DashboardGameCard";
 import LoadingScreen from "../../components/LoadingScreen";
 import {RefreshDashboardContext} from "../../contexts/RefreshDashboard";

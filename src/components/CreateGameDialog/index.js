@@ -119,6 +119,7 @@ const GameDialogForm = (props) => {
             </div>
             <div className={styles.Submit}>
                 <Button
+                    type={"submit"}
                     variant={'contained'}
                     disableElevation
                     style={{

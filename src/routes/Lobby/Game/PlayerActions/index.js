@@ -9,6 +9,7 @@ import {experimentalStyled} from "@material-ui/core";
 import {StatusIcon} from "../Player";
 import {sort} from "../../../../utils/movement";
 import {deepEqual} from "../../../../utils/equal";
+import {getSetting} from "../../../../utils/settings";
 import {CardSuits, MoveTypes, parseCard, ServerEvents} from "shared";
 
 
@@ -57,7 +58,7 @@ function generateSortMoves(items, sortBySuit = false) {
     return moves;
 }
 
-const WhiteButton = experimentalStyled(Button)(({ theme }) => ({
+const WhiteButton = experimentalStyled(Button)(({theme}) => ({
     color: theme.palette.getContrastText("#e0e0e0"),
     backgroundColor: "#e0e0e0",
     margin: "0 8px 0 0",
@@ -87,15 +88,22 @@ const PlayerActions = props => {
     }
 
     function sortCards() {
-        // const moves = generateSortMoves(props.deck, sortBySuit);
-        //
-        // if (moves.length === 0) return;
 
-        const cards = sort(props.deck, sortBySuit);
+        // See if user has enabled card sort animation
+        // TODO: maybe move magic const to a config: It will only animate for a max of 12 cards
+        if (getSetting("animateCardSort") && props.deck.length <= 12) {
+            const moves = generateSortMoves(props.deck, sortBySuit);
 
-        // No point of re-rendering if the order didn't change.
-        if (!deepEqual(props.deck, cards)) {
-            props.setCards(cards);
+            if (moves.length !== 0) {
+                props.moveCards(moves);
+            }
+        } else {
+            const cards = sort(props.deck, sortBySuit);
+
+            // No point of re-rendering if the order didn't change.
+            if (!deepEqual(props.deck, cards)) {
+                props.setCards(cards);
+            }
         }
 
         setSortBySuit(!sortBySuit);
@@ -136,7 +144,7 @@ PlayerActions.propTypes = {
     isDragging: PropTypes.bool.isRequired,
 
     // actions
-    // moveCard: PropTypes.func.isRequired,
+    moveCards: PropTypes.func,
     setCards: PropTypes.func.isRequired,
 
     // refs

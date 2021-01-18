@@ -30,14 +30,14 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
 
-// function delay(fn, time = 10) {
-//     return new Promise((resolve) => {
-//         setTimeout(() => {
-//             fn();
-//             resolve();
-//         }, time);
-//     });
-// }
+function delay(fn, time = 10) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            fn();
+            resolve();
+        }, time);
+    });
+}
 
 
 class Game extends React.Component {
@@ -77,7 +77,7 @@ class Game extends React.Component {
         this.canForfeit = this.canForfeit.bind(this);
 
         // user interaction with the game board
-        // this.moveCard = this.moveCard.bind(this);
+        this.moveCards = this.moveCards.bind(this);
         this.keyListener = this.keyListener.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
@@ -233,44 +233,44 @@ class Game extends React.Component {
      *
      * @param {{item: number, steps: number}[]} moves - The moves to perform
      * */
-    // async moveCard(moves) {
-    //     const {dragApi} = this.state;
-    //     if (!dragApi) throw new Error("Uninitialised Drag API");
-    //
-    //     for (let move of moves) {
-    //         let item = move.item
-    //         let steps = move.steps;
-    //
-    //         dragApi.tryReleaseLock();
-    //         const preDrag = dragApi.tryGetLock(`card-${item}`, () => {
-    //         });
-    //
-    //         // We fail to acquire lock, but that's ok since it's likely that the user is
-    //         // spamming the sorting function.
-    //         if (!preDrag) return;
-    //
-    //         const actions = preDrag.snapLift();
-    //         const direction = steps < 0 ? "left" : "right";
-    //         steps = Math.abs(steps);
-    //
-    //         while (steps > 0 && actions.isActive()) {
-    //             await delay(() => {
-    //                 if (actions.isActive()) {
-    //                     // Move the item depending on the direction.
-    //                     if (direction === "left") {
-    //                         actions.moveLeft();
-    //                     } else {
-    //                         actions.moveRight();
-    //                     }
-    //                 }
-    //             });
-    //
-    //             steps--;
-    //         }
-    //
-    //         if (actions.isActive()) actions.drop();
-    //     }
-    // }
+    async moveCards(moves) {
+        const {dragApi} = this.state;
+        if (!dragApi) throw new Error("Uninitialised Drag API");
+
+        for (let move of moves) {
+            let item = move.item
+            let steps = move.steps;
+
+            dragApi.tryReleaseLock();
+            const preDrag = dragApi.tryGetLock(`card-${item}`, () => {
+            });
+
+            // We fail to acquire lock, but that's ok since it's likely that the user is
+            // spamming the sorting function.
+            if (!preDrag) return;
+
+            const actions = preDrag.snapLift();
+            const direction = steps < 0 ? "left" : "right";
+            steps = Math.abs(steps);
+
+            while (steps > 0 && actions.isActive()) {
+                await delay(() => {
+                    if (actions.isActive()) {
+                        // Move the item depending on the direction.
+                        if (direction === "left") {
+                            actions.moveLeft();
+                        } else {
+                            actions.moveRight();
+                        }
+                    }
+                });
+
+                steps--;
+            }
+
+            if (actions.isActive()) actions.drop();
+        }
+    }
 
     /**
      * Method to handle key presses and invoke some action based on the key.
@@ -528,7 +528,7 @@ class Game extends React.Component {
                                 sortRef={this.sortRef}
                                 socket={socket}
                                 isDragging={isDragging}
-                                moveCard={this.moveCard}
+                                moveCards={this.moveCards}
                                 canForfeit={this.canForfeit() && !isDragging}
                                 setCards={(deck) => {
                                     this.setState((prevState) => ({
