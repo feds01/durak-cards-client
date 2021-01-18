@@ -11,7 +11,7 @@ const NameSchema = Yup.object().shape({
     name: Yup.string()
         .trim("Name cannot have spaces.")
         .strict()
-        .matches(/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/, "Name cannot have spaces.")
+        .matches(/^[^\s]{1,20}$/, "Name cannot have spaces.")
         .max(20, "Name too long")
         .required("Name can't be empty")
 });
