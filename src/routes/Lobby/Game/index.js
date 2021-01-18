@@ -2,6 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import PropTypes from 'prop-types';
 import useSound from "use-sound";
+import debounce from "lodash.debounce";
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
 
@@ -11,136 +12,32 @@ import Player from "./Player";
 import Header from "./Header";
 import CardHolder from "./CardHolder";
 import VictoryDialog from "./Victory";
+import Announcement from "./Announcement";
 import PlayerActions from "./PlayerActions";
+import {move, reorder} from "../../../utils/movement";
+import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
-import {ClientEvents, MoveTypes, parseCard, ServerEvents} from "shared";
+import {ClientEvents, MoveTypes, ServerEvents} from "shared";
 
 import place from "./../../../assets/sound/place.mp3";
 import begin from "./../../../assets/sound/begin.mp3";
-import Announcement from "./Announcement";
 
-const reorder = (list, startIndex, endIndex) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-
-    return result;
-};
-
-const move = (source, destination, droppableSource, droppableDestination) => {
-    const sourceClone = Array.from(source);
-    const destClone = Array.from(destination);
-    const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-    destClone.splice(droppableDestination.index, 0, removed);
-
-    return {src: sourceClone, dest: destClone}
-};
-
-function canPlaceOnPrevious(index, tableTop) {
-    let k = 0;
-
-    // special case for index of '0'
-    if (index === 0 && tableTop[0].length === 0) {
-        return false;
-    }
-
-    do {
-        if (tableTop[k].length === 0) return true;
-
-        k++;
-    } while (k < index);
-
-    return false;
-}
-
-function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, playerRef) {
-    const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
-    const attackingCard = parseCard(card);
-
-    // count the number of 'placed' and 'uncovered' cards on the table, if adding
-    // one more to the table will result in there being more cards than the defender
-    // can cover, we should prevent the placement here.
-    const uncoveredCount = tableTop.reduce((acc, value) => {
-        return value.length === 1 ? acc + 1 : acc;
-    }, 0);
-
-
-    if (isDefending) {
-
-        // special case where defender wants to transfer 'defense' to next player...
-        if (!canPlaceOnPrevious(pos, tableTop) &&
-            tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
-            allNumerics.size === 1 &&
-            allNumerics.has(attackingCard.value) &&
-
-            // the next player has enough cards to cover the table
-            playerRef.deck >= uncoveredCount + 1
-        ) {
-            return true;
-        }
-
-        // check that the tableTop contains a card at the 'pos'
-        if (tableTop[pos].length !== 1) return false;
-
-        const coveringCard = parseCard(tableTop[pos][0].value);
-
-        if (attackingCard.suit === coveringCard.suit) {
-            // The trumping suit doesn't matter here since they are the same
-            return coveringCard.value < attackingCard.value;
-        }
-
-        return attackingCard.suit === trumpSuit;
-    } else {
-        // check that the tableTop contains a card at the 'pos'
-        if (tableTop[pos].length !== 0) {
-            return false;
-        }
-
-        if (uncoveredCount + 1 > playerRef.deck) return false;
-
-        // special case where the number of cards is zero.
-        return allNumerics.size === 0 || allNumerics.has(attackingCard.value);
-    }
-}
-
+// Import our key bind configurations
+import keyBinds from "./../../../assets/config/key_binds.json";
 
 // An abstraction of how player avatars should be added depending on the
 // number of opponents in the game. The player avatars will be added depending
 // on the 'area' they have been allocated on the game board.
-const AvatarGridLayout = {
-    1: {
-        "players-top": 1,
-    },
-    2: {
-        "players-top": 2,
-    },
-    3: {
-        "players-top": 1,
-        "players-left": 1,
-        "players-right": 1
-    },
-    4: {
-        "players-top": 2,
-        "players-left": 1,
-        "players-right": 1
-    },
-    5: {
-        "players-top": 3,
-        "players-left": 1,
-        "players-right": 1
-    },
-    6: {
-        "players-top": 2,
-        "players-left": 2,
-        "players-right": 2
-    },
-    7: {
-        "players-top": 3,
-        "players-left": 2,
-        "players-right": 2
-    },
-}
+import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
+
+// function delay(fn, time = 10) {
+//     return new Promise((resolve) => {
+//         setTimeout(() => {
+//             fn();
+//             resolve();
+//         }, time);
+//     });
+// }
 
 
 class Game extends React.Component {
@@ -162,6 +59,7 @@ class Game extends React.Component {
             },
 
             // State related to UI
+            dragApi: null,
             canPlaceMap: Game.EmptyPlaceMap,
             showVictory: false,
             showAnnouncement: false,
@@ -169,11 +67,18 @@ class Game extends React.Component {
             queuedUpdates: [],
         }
 
+        // refs
+        this.sortRef = React.createRef();
+
         // rendering helpers
         this.renderPlayerRegion = this.renderPlayerRegion.bind(this);
 
         // game actions
         this.canForfeit = this.canForfeit.bind(this);
+
+        // user interaction with the game board
+        // this.moveCard = this.moveCard.bind(this);
+        this.keyListener = this.keyListener.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onBeforeDragStart = this.onBeforeDragStart(this);
@@ -201,6 +106,12 @@ class Game extends React.Component {
         return !this.state.game.turned && !this.state.game.out;
     }
 
+    /**
+     * This method is invoked before a react-beautiful-dnd drag event occurs. This method is
+     * used to determine which 'droppable' areas we should disable based on the card that
+     * is being dragged.
+     *
+     * */
     onBeforeCapture(event) {
         const {isDefending, trumpCard, canAttack, tableTop, deck} = this.state.game;
 
@@ -228,17 +139,31 @@ class Game extends React.Component {
         });
     }
 
-    onBeforeDragStart(event) {
+    /**
+     * This method is invoked before a react-beautiful-dnd drag event occurs. This method is
+     * used to determine which 'droppable' areas we should disable based on the card that
+     * is being dragged.
+     *
+     * */
+    onBeforeDragStart() {
         this.setState({isDragging: true});
     }
 
+    /**
+     * This method is invoked after a react-beautiful-dnd drag event occurs. This method is
+     * used to determine how the internal component state should change depending on the
+     * event. If a card is moved in the player deck, the player deck is just re-ordered, however
+     * if a card moves from the player deck onto the table top, the card should be moved out of
+     * the game deck state into the table top state.
+     *
+     * */
     onDragEnd(result) {
         const {source, destination} = result;
 
         // dropped outside the list
         if (!destination) {
             // reset the canPlaceMap for new cards
-            return this.setState({ isDragging: false, canPlaceMap: Game.EmptyPlaceMap});
+            return this.setState({isDragging: false, canPlaceMap: Game.EmptyPlaceMap});
         }
 
         switch (source.droppableId) {
@@ -301,20 +226,88 @@ class Game extends React.Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
+    /**
+     * This method is used to programmatically move a card in the players deck by
+     * selecting an item, giving it a direction, and specifying how many place to move
+     * the card.
+     *
+     * @param {{item: number, steps: number}[]} moves - The moves to perform
+     * */
+    // async moveCard(moves) {
+    //     const {dragApi} = this.state;
+    //     if (!dragApi) throw new Error("Uninitialised Drag API");
+    //
+    //     for (let move of moves) {
+    //         let item = move.item
+    //         let steps = move.steps;
+    //
+    //         dragApi.tryReleaseLock();
+    //         const preDrag = dragApi.tryGetLock(`card-${item}`, () => {
+    //         });
+    //
+    //         // We fail to acquire lock, but that's ok since it's likely that the user is
+    //         // spamming the sorting function.
+    //         if (!preDrag) return;
+    //
+    //         const actions = preDrag.snapLift();
+    //         const direction = steps < 0 ? "left" : "right";
+    //         steps = Math.abs(steps);
+    //
+    //         while (steps > 0 && actions.isActive()) {
+    //             await delay(() => {
+    //                 if (actions.isActive()) {
+    //                     // Move the item depending on the direction.
+    //                     if (direction === "left") {
+    //                         actions.moveLeft();
+    //                     } else {
+    //                         actions.moveRight();
+    //                     }
+    //                 }
+    //             });
+    //
+    //             steps--;
+    //         }
+    //
+    //         if (actions.isActive()) actions.drop();
+    //     }
+    // }
 
-        // if game state changes... we should update
-        if (!deepEqual(this.state.game, nextState.game)) {
-            return true;
+    /**
+     * Method to handle key presses and invoke some action based on the key.
+     *
+     * @param {KeyboardEvent} event - The event to process
+     * */
+    keyListener = debounce((event) => {
+        const {isDragging} = this.state;
+
+        // We won't process any events whilst we're sorting
+        if (isDragging) return;
+
+        switch (event.key.toLowerCase()) {
+            case keyBinds.SKIP: {
+                if (this.canForfeit()) {
+                    // TODO: move this function to some context
+                    this.props.socket.emit(ServerEvents.MOVE, {
+                        type: MoveTypes.FORFEIT,
+                    });
+                }
+                break;
+            }
+            case keyBinds.SORT: {
+                this.sortRef?.current.click();
+                break;
+            }
+            default: {
+            }
         }
+    }, 200);
 
-        // we should also update if any of the following updates... canPlaceMap and showVictory
-        // Essentially we are avoiding a re-render on 'isDragging' or 'queuedUpdates' changing.
-        return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) ||
-            this.state.showVictory !== nextState.showVictory ||
-            this.state.showAnnouncement !== nextState.showAnnouncement;
-    }
-
+    /**
+     * Method invoked when a state or prop change occurs, check the change in state/props to
+     * determine whether the component should re-render or not.
+     *
+     * @returns {boolean|null} Whether to re-render or not.
+     * */
     handleGameStateUpdate(update) {
         // prevent updates from being applied to table-top or user deck whilst a drag
         // event is occurring. We can attempt to merge the 'state' after the drag update
@@ -333,7 +326,7 @@ class Game extends React.Component {
                 }
             });
 
-            return;
+            return null;
         }
 
         const tableTop = Object.entries(update.tableTop).map((cards) => {
@@ -389,11 +382,38 @@ class Game extends React.Component {
         });
     }
 
+    /**
+     * Method invoked when a state or prop change occurs, check the change in state/props to
+     * determine whether the component should re-render or not.
+     *
+     * @returns {boolean} Whether to re-render or not.
+     * */
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+
+        // if game state changes... we should update
+        if (!deepEqual(this.state.game, nextState.game)) {
+            return true;
+        }
+
+        // we should also update if any of the following updates... canPlaceMap and showVictory
+        // Essentially we are avoiding a re-render on 'isDragging' or 'queuedUpdates' changing.
+        return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) ||
+            this.state.showVictory !== nextState.showVictory ||
+            this.state.showAnnouncement !== nextState.showAnnouncement;
+    }
+
+    /**
+     * Method invoked on component mount, essentially sets up socket event listeners
+     * and or propagates a game state if one already exists (passed in from parent).
+     * */
     componentDidMount() {
         // The user refreshed the page and maybe re-joined
         if (this.props.game !== null && typeof this.props.game !== 'undefined') {
             this.handleGameStateUpdate(this.props.game);
         }
+
+        // setup key listener for shortcuts.
+        window.addEventListener("keydown", this.keyListener);
 
         // Common event for processing any player actions taken...e
         // should be transferred on the 'started_game' event.
@@ -411,11 +431,27 @@ class Game extends React.Component {
         });
     }
 
+    /**
+     * Method to clean up any resources left by the component when un-mounting. In this case,
+     * we're simply removing the key listener since we don't need it anymore
+     * */
+    componentWillUnmount() {
+        window.removeEventListener("keydown", this.keyListener);
+    }
+
+    /**
+     * Helper method to render a particular region on the game board for player avatars. The method
+     * uses the AvatarPlayerGrid configuration layout file to distribute the players in the desired
+     * order around the game table.
+     *
+     * @param region {"players-top"|"players-left"|"players-right"} The region to construct
+     * @return The constructed region
+     * */
     renderPlayerRegion(region) {
         const regionOrder = ['players-left', 'players-top', 'players-right'];
 
         const {players} = this.state.game;
-        const layout = AvatarGridLayout[players.length];
+        const layout = AvatarGridLayout[players.length.toString()];
 
         // don't do anything if no players are currently present or the region isn't being used.
         if (players.length === 0 || typeof layout[region] === 'undefined') {
@@ -440,11 +476,12 @@ class Game extends React.Component {
 
     render() {
         const {socket, lobby} = this.props;
-        const {deck, out, deckSize, canAttack, isDefending, trumpCard, tableTop} = this.state.game;
+        const {isDragging, showAnnouncement, playerOrder, showVictory} = this.state;
+        const {deck, deckSize, isDefending, trumpCard, tableTop} = this.state.game;
 
         return (
             <>
-                {this.state.showAnnouncement && !this.state.showVictory && (
+                {showAnnouncement && !showVictory && (
                     <Announcement onFinish={() => this.setState({showAnnouncement: false})}>Attacking!</Announcement>
                 )}
                 {this.state.showVictory && (
@@ -453,16 +490,19 @@ class Game extends React.Component {
                             socket.emit(ServerEvents.JOIN_GAME);
                         }}
                         name={lobby.name}
-                        players={this.state.playerOrder}
+                        players={playerOrder}
                     />
                 )}
                 <DragDropContext
                     onBeforeDragStart={this.onBeforeDragStart}
                     onDragEnd={this.onDragEnd}
                     onBeforeCapture={this.onBeforeCapture}
+                    sensors={[
+                        (api) => this.setState({dragApi: api})
+                    ]}
                 >
                     <div className={styles.GameContainer}>
-                        <Header className={styles.GameHeader} countdown={this.props.lobby.roundTimeout}/>
+                        <Header className={styles.GameHeader} countdown={lobby.roundTimeout}/>
                         <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
                             {this.renderPlayerRegion("players-top")}
                         </div>
@@ -485,17 +525,28 @@ class Game extends React.Component {
                         </div>
                         <CardHolder cards={deck} className={styles.GameFooter}>
                             <PlayerActions
+                                sortRef={this.sortRef}
                                 socket={socket}
-                                canAttack={canAttack}
-                                out={out}
-                                canForfeit={this.canForfeit()}
-                                isDefending={isDefending}
+                                isDragging={isDragging}
+                                moveCard={this.moveCard}
+                                canForfeit={this.canForfeit() && !isDragging}
+                                setCards={(deck) => {
+                                    this.setState((prevState) => ({
+                                        game: {
+                                            ...prevState.game,
+                                            deck
+                                        }
+                                    }))
+                                }}
+
+                                {...this.state.game}
                             />
                         </CardHolder>
                     </div>
                 </DragDropContext>
             </>
-        );
+        )
+            ;
     }
 }
 
