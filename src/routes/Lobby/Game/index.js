@@ -30,7 +30,7 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
 
-function delay(fn, time = 10) {
+function delay(fn, time = 200) {
     return new Promise((resolve) => {
         setTimeout(() => {
             fn();

@@ -1,17 +1,16 @@
 import * as Yup from "yup";
 import {Formik} from "formik";
 import styles from './index.module.scss';
+import Zoom from "@material-ui/core/Zoom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import Divider from "@material-ui/core/Divider";
 import React, {useEffect, useState} from 'react';
-
-import Zoom from "@material-ui/core/Zoom";
-import Loader from "react-loader-spinner";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import defaultSettings from "./../../assets/config/default_settings.json";
+
 import {getSettings, saveSettings} from "../../utils/settings";
+import defaultSettings from "./../../assets/config/default_settings.json";
 
 const SettingsSchema = Yup.object().shape({
     animateCardSort: Yup.bool().required(),
@@ -24,35 +23,46 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 
 const GameSettingsDialog = (props) => {
-    const [settings, setSettings] = useState(defaultSettings);
+    const [settings, setSettings] = useState(getSettings());
+    const [saveStatus, setSaveStatus] = useState("");
 
     // Load up settings from local storage to see what player has set.
     useEffect(() => {
         try {
-            let localSettings = getSettings();
-
             // User hasn't initialised settings yet...
-            if (!SettingsSchema.validateSync(localSettings)) {
-                localSettings = {};
+            if (!SettingsSchema.validateSync(settings)) {
+                let localSettings = {};
 
                 Object.keys(defaultSettings).forEach((setting) => {
                     localSettings[setting] = defaultSettings[setting];
                 });
 
-                saveSettings(localSettings);
+                setSettings(localSettings);
             }
 
-            setSettings(localSettings);
+            saveSettings(settings);
         } catch (e) {
             saveSettings(defaultSettings);
         }
 
-    }, []);
+    }, [settings]);
 
-    async function submit(values, {setSubmitting}) {
-        setSubmitting(true);
-        saveSettings(values);
-        setSubmitting(false);
+    useEffect(() => {
+        let timeout;
+
+        if (saveStatus !== "") {
+            // queue a 2 second function to reset the status to an empty string
+            timeout = setTimeout(() => {setSaveStatus("")}, 2000);
+        }
+
+        return () => {
+            if (timeout) clearTimeout(timeout);
+        }
+    }, [saveStatus]);
+
+    async function submit(values) {
+        setSettings(values);
+        setSaveStatus("Saved!")
     }
 
     return (
@@ -68,14 +78,14 @@ const GameSettingsDialog = (props) => {
                 initialValues={settings}
                 onSubmit={submit}
             >
-                {(props => <GameSettingsForm {...props}/>)}
+                {(props => <GameSettingsForm {...props} saveStatus={saveStatus}/>)}
             </Formik>
         </Dialog>
     );
 };
 
 const GameSettingsForm = (props) => {
-    const {values, handleChange, isSubmitting, handleSubmit} = props;
+    const {values, handleChange, isSubmitting, handleSubmit, saveStatus} = props;
 
     return (
         <div className={styles.Dialog}>
@@ -119,8 +129,7 @@ const GameSettingsForm = (props) => {
                     onClick={handleSubmit}
                     color={'primary'}
                 >
-                    {isSubmitting ?
-                        <Loader type="ThreeDots" color="#FFFFFF" height={20} width={40}/> : "Save"}
+                    {saveStatus ? saveStatus : "Save"}
                 </Button>
             </div>
         </div>

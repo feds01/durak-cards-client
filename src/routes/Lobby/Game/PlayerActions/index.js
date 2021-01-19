@@ -16,8 +16,8 @@ import {CardSuits, MoveTypes, parseCard, ServerEvents} from "shared";
 function generateSortMoves(items, sortBySuit = false) {
     const moves = []
 
+    const ref = items.map((item) => parseCard(item.value));
     const original = items.map((item) => parseCard(item.value));
-    const ref = items.map((item) => parseCard(item.value))
 
     ref.sort((a, b) => {
         return a.value - b.value
