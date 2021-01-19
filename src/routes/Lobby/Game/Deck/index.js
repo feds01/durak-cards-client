@@ -38,7 +38,6 @@ Deck.propTypes = {
 };
 
 Deck.defaultProps = {
-    // TODO: maybe use skeleton UI for this when first loading
     trumpCard: {value: "", suit: "", card: ""},
     count: 52,
 }

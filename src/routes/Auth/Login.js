@@ -23,7 +23,7 @@ import {updateTokens} from "../../utils/auth";
 
 const LoginSchema = Yup.object().shape({
     name: Yup.string()
-        .matches(/^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/, "Name cannot have spaces.")
+        .matches(/^[^\s]{1,20}$/, "Name cannot have spaces")
         .max(20, "Name too long")
         .required('Required'),
     password: Yup.string()
