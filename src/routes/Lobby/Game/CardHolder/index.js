@@ -13,7 +13,7 @@ import {useSetting} from "../../../../contexts/SettingContext";
 const CardHolder = props => {
     const {playSuggestions} = useSetting();
     const [highlight, setHighlight] = useState([]);
-    const {deck, isDefending, trumpCard, players, tableTop} = useGameState();
+    const {deck, isDefending, canAttack, trumpCard, players, tableTop} = useGameState();
 
     useEffect(() => {
         if (playSuggestions) {
@@ -27,11 +27,11 @@ const CardHolder = props => {
                 nextPlayer = players.find((p) => p.isDefending);
             }
 
-            setHighlight(canPlace(deck, tableTop, isDefending, trumpCard, nextPlayer));
+            setHighlight(canPlace(deck, tableTop, isDefending, canAttack, trumpCard, nextPlayer));
         } else {
             setHighlight([]);
         }
-    }, [deck, playSuggestions, isDefending, trumpCard, players, tableTop]);
+    }, [deck, playSuggestions, isDefending, canAttack, trumpCard, players, tableTop]);
 
     return (
         <div className={clsx(props.className, styles.Holder)}>

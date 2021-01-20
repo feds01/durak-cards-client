@@ -120,7 +120,7 @@ const PlayerActions = props => {
                     disabled={!props.canForfeit}
                     endIcon={<ClearIcon/>}
                 >
-                    {props.isDefending ? "forfeit" : "skip"}
+                    {isDefending ? "forfeit" : "skip"}
                 </WhiteButton>
                 <WhiteButton
                     ref={props.sortRef}

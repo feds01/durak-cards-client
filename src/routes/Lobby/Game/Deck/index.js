@@ -25,7 +25,7 @@ const Deck = props => {
                 useBackground
             />
 
-            {props.count > 1 && (
+            {deckSize > 1 && (
                 <Card
                     draggable={false}
                     className={styles.TopCard}

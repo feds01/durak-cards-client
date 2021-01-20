@@ -20,7 +20,7 @@ export function isPreviousHolderFree(tableTop, index) {
 /**
  * Generic function to check if a card can be used in play on the table.
  * */
-export function canPlace(cards, tableTop, isDefending, trumpSuit, playerRef) {
+export function canPlace(cards, tableTop, isDefending, canAttack, trumpSuit, playerRef) {
     const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
 
     // build an array for the size
@@ -29,7 +29,7 @@ export function canPlace(cards, tableTop, isDefending, trumpSuit, playerRef) {
     while (i < N) a[i++] = i - 1;
 
     return cards.map((card) => {
-        if (!isDefending) {
+        if (!isDefending && canAttack) {
             return allNumerics.size === 0 || allNumerics.has(parseCard(card.value).value);
         } else {
             return a.map((idx) => canPlaceCard(card.value, idx, tableTop, isDefending, trumpSuit, playerRef))
