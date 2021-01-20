@@ -29,9 +29,12 @@ export function canPlace(cards, tableTop, isDefending, canAttack, trumpSuit, pla
     while (i < N) a[i++] = i - 1;
 
     return cards.map((card) => {
-        if (!isDefending && canAttack) {
+        if (!isDefending) {
+            if (!canAttack) return false; // if they can't attack, they can't place any cards yet!
+
             return allNumerics.size === 0 || allNumerics.has(parseCard(card.value).value);
         } else {
+            // This is somewhat inefficient, we could be using 'allNumerics' here somehow.
             return a.map((idx) => canPlaceCard(card.value, idx, tableTop, isDefending, trumpSuit, playerRef))
                 .some(k => k);
         }
