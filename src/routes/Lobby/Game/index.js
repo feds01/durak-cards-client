@@ -469,7 +469,13 @@ class Game extends React.Component {
             return acc + layout[value];
         }, 0);
 
-        return players.slice(offset, offset + layout[region]).map((player, index) => {
+        let playerSection =  players.slice(offset, offset + layout[region]);
+
+        // if it's the left hand-side, we need to reverse the list since we want the
+        // first player to be closest to the current player.
+        if (region === "players-left") playerSection = playerSection.reverse();
+
+        return playerSection.map((player, index) => {
             return <Player {...player} key={index}/>
         });
     }
