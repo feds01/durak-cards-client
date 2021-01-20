@@ -31,6 +31,17 @@
     justify-content: center;
   }
 
+  & .Shifted {
+    margin-right: 20px;
+    position: absolute;
+    z-index: 0;
+  }
+
+  & .Tilted {
+    z-index: 1;
+    transform: rotate(10deg) translateX(10px);
+  }
+
   & .CanPlace {
     border: 2px white dashed;
   }

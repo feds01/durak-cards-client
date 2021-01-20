@@ -11,6 +11,7 @@ import {sort} from "../../../../utils/movement";
 import {deepEqual} from "../../../../utils/equal";
 import {getSetting} from "../../../../utils/settings";
 import {CardSuits, MoveTypes, parseCard, ServerEvents} from "shared";
+import {useGameState} from "../GameContext";
 
 
 function generateSortMoves(items, sortBySuit = false) {
@@ -70,15 +71,16 @@ const WhiteButton = experimentalStyled(Button)(({theme}) => ({
 const PlayerActions = props => {
     const [statusText, setStatusText] = useState("");
     const [sortBySuit, setSortBySuit] = useState(false);
+    const {out, canAttack, deck, isDefending} = useGameState();
 
     useEffect(() => {
-        if (props.out) {
+        if (out) {
             setStatusText("VICTORY");
         } else {
-            setStatusText(props.isDefending ? "DEFENDING" : (props.canAttack ? "ATTACKING" : "WAITING"));
+            setStatusText(isDefending ? "DEFENDING" : (canAttack ? "ATTACKING" : "WAITING"));
         }
 
-    }, [props.isDefending, props.canAttack, props.out]);
+    }, [isDefending, canAttack, out]);
 
 
     function sendForfeit() {
@@ -91,17 +93,17 @@ const PlayerActions = props => {
 
         // See if user has enabled card sort animation
         // TODO: maybe move magic const to a config: It will only animate for a max of 12 cards
-        if (getSetting("animateCardSort") && props.deck.length <= 12) {
-            const moves = generateSortMoves(props.deck, sortBySuit);
+        if (getSetting("animateCardSort") && deck.length <= 12) {
+            const moves = generateSortMoves(deck, sortBySuit);
 
             if (moves.length !== 0) {
                 props.moveCards(moves);
             }
         } else {
-            const cards = sort(props.deck, sortBySuit);
+            const cards = sort(deck, sortBySuit);
 
             // No point of re-rendering if the order didn't change.
-            if (!deepEqual(props.deck, cards)) {
+            if (!deepEqual(deck, cards)) {
                 props.setCards(cards);
             }
         }
@@ -131,7 +133,7 @@ const PlayerActions = props => {
             </div>
 
             <div className={styles.Status}>
-                <StatusIcon out={props.out} isDefending={props.isDefending}/>
+                <StatusIcon out={out} isDefending={isDefending}/>
                 <span>{statusText}</span>
             </div>
         </div>
@@ -153,11 +155,7 @@ PlayerActions.propTypes = {
         PropTypes.shape({current: PropTypes.instanceOf(Element)})
     ]),
 
-    deck: PropTypes.array.isRequired,
-    out: PropTypes.bool.isRequired,
-    isDefending: PropTypes.bool.isRequired,
     canForfeit: PropTypes.bool.isRequired,
-    canAttack: PropTypes.bool.isRequired,
     socket: PropTypes.object.isRequired,
 };
 

@@ -1,6 +1,6 @@
 import {parseCard} from "shared";
 
-function canPlaceOnPrevious(index, tableTop) {
+export function isPreviousHolderFree(tableTop, index) {
     let k = 0;
 
     // special case for index of '0'
@@ -17,6 +17,12 @@ function canPlaceOnPrevious(index, tableTop) {
     return false;
 }
 
+/**
+ * Generic function to check if a card can be used in play on the table.
+ * */
+export function canPlace(card, tableTop, trumpSuit, playerRef) {
+
+}
 
 export function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, playerRef) {
     const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
@@ -33,7 +39,7 @@ export function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, player
     if (isDefending) {
 
         // special case where defender wants to transfer 'defense' to next player...
-        if (!canPlaceOnPrevious(pos, tableTop) &&
+        if (!isPreviousHolderFree(tableTop, pos) &&
             tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
             allNumerics.size === 1 &&
             allNumerics.has(attackingCard.value) &&

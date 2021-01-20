@@ -14,6 +14,7 @@ import CardHolder from "./CardHolder";
 import VictoryDialog from "./Victory";
 import Announcement from "./Announcement";
 import PlayerActions from "./PlayerActions";
+import {GameContext} from "./GameContext";
 import {move, reorder} from "../../../utils/movement";
 import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
@@ -469,7 +470,7 @@ class Game extends React.Component {
             return acc + layout[value];
         }, 0);
 
-        let playerSection =  players.slice(offset, offset + layout[region]);
+        let playerSection = players.slice(offset, offset + layout[region]);
 
         // if it's the left hand-side, we need to reverse the list since we want the
         // first player to be closest to the current player.
@@ -483,14 +484,13 @@ class Game extends React.Component {
     render() {
         const {socket, lobby} = this.props;
         const {isDragging, showAnnouncement, playerOrder, showVictory} = this.state;
-        const {deck, deckSize, isDefending, trumpCard, tableTop} = this.state.game;
 
         return (
-            <>
+            <GameContext.Provider value={this.state.game}>
                 {showAnnouncement && !showVictory && (
                     <Announcement onFinish={() => this.setState({showAnnouncement: false})}>Attacking!</Announcement>
                 )}
-                {this.state.showVictory && (
+                {showVictory && (
                     <VictoryDialog
                         onNext={() => {
                             socket.emit(ServerEvents.JOIN_GAME);
@@ -517,19 +517,14 @@ class Game extends React.Component {
                         </div>
                         <Table
                             className={styles.GameTable}
-                            hand={deck}
                             placeMap={this.state.canPlaceMap}
-                            tableTop={tableTop}
-                            isDefending={isDefending}
                         >
-                            {
-                                trumpCard && <Deck count={deckSize} trumpCard={trumpCard}/>
-                            }
+                            <Deck/>
                         </Table>
                         <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
                             {this.renderPlayerRegion("players-right")}
                         </div>
-                        <CardHolder cards={deck} className={styles.GameFooter}>
+                        <CardHolder className={styles.GameFooter}>
                             <PlayerActions
                                 sortRef={this.sortRef}
                                 socket={socket}
@@ -543,14 +538,11 @@ class Game extends React.Component {
                                             deck
                                         }
                                     }))
-                                }}
-
-                                {...this.state.game}
-                            />
+                                }}/>
                         </CardHolder>
                     </div>
                 </DragDropContext>
-            </>
+            </GameContext.Provider>
         )
             ;
     }

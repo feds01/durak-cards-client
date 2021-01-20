@@ -6,182 +6,90 @@ import styles from "./index.module.scss";
 import Card from "../Card";
 import AttackingDrop from "./AttackingDrop";
 import DefendingDrop from "./DefendingDrop";
+import {useGameState} from "../GameContext";
+import {isPreviousHolderFree} from "../../../../utils/placement";
 
 
-class Table extends React.Component {
-    constructor(props) {
-        super(props);
+const Table = (props) => {
+    const {tableTop, isDefending} = useGameState();
 
-        this.checkForFreePreviousSlots = this.checkForFreePreviousSlots.bind(this);
-    }
+    return (
+        <div className={clsx(props.className, styles.Container)}>
+            <div style={{flexGrow: 1}}>
+                <div className={styles.CardGrid}>
+                    {
+                        tableTop.map((holder, index) => {
 
+                            // If there are two cards for the current holder, it doesn't matter if the
+                            // player is a defender or not, the render process is identical.
+                            if (holder.length === 2) {
+                                return (
+                                    <div key={index}>
+                                        <Card className={styles.Shifted} {...holder[0]}/>
+                                        <Card className={styles.Tilted} {...holder[1]}/>
+                                    </div>
+                                )
+                            }
 
-    /**
-     * Check if slots before the given index can hold an attackers card.
-     *
-     * @param {number} index - The number of the slot to check up to
-     * */
-    checkForFreePreviousSlots(index) {
-        const {tableTop} = this.props;
+                            const shouldBlock = !props.placeMap[index] && !isPreviousHolderFree(tableTop, index);
 
-        let k = 0;
-
-        // special case for index of '0'
-        if (index === 0 && tableTop[0].length === 0) {
-            return true;
-        }
-
-        do {
-            if (tableTop[k].length === 0) {
-                return false;
-            }
-
-            k++;
-        } while (k < index);
-
-        return true;
-    }
-
-    render() {
-        const {tableTop, isDefending, placeMap} = this.props;
-
-        return (
-            <div className={clsx(this.props.className, styles.Container)}>
-                <div style={{flexGrow: 1}}>
-                    <div className={styles.CardGrid}>
-                        {
-                            tableTop.map((item, index) => {
-                                const shouldBlock = !placeMap[index] && this.checkForFreePreviousSlots(index);
-
-                                // If there are two cards for the current holder, it doesn't matter if the
-                                // player is a defender or not, the render process is identical.
-                                if (item.length === 2) {
+                            if (isDefending) {
+                                if (holder.length === 1) {
                                     return (
-                                        <div key={index}>
-                                            <Card
-                                                style={{
-                                                    marginRight: 20,
-                                                    position: "absolute",
-                                                    zIndex: 0,
-                                                }}
-                                                {...(item[0] && {
-                                                    ...item[0],
-                                                    useBackground: true
-                                                })}
-                                            />
-                                            <Card
-                                                style={{
-                                                    zIndex: 1,
-                                                    transform: 'rotate(10deg) translateX(10px)'
-                                                }}
-                                                {...item[1]}
-                                                useBackground
-                                            />
+                                        <DefendingDrop
+                                            key={index}
+                                            canPlace={props.placeMap[index]}
+                                            card={holder[0]}
+                                            index={index}
+                                        />
+                                    )
+                                }
+
+                                return (
+                                    <AttackingDrop
+                                        key={index}
+                                        // TODO: clean-up: we shouldn't have to check for zero-th index case, this should be handled by canPlace func
+                                        canPlace={index !== 0 && props.placeMap[index] && !isPreviousHolderFree(tableTop, index)}
+                                        className={clsx({
+                                            [styles.BlockHovering]: shouldBlock && index !== 0,
+                                        })}
+                                        index={index}
+                                    />
+                                )
+                            } else {
+                                if (holder.length === 1) {
+                                    return (
+                                        <div key={index} className={styles.Item}>
+                                            <Card {...holder[0]}/>
                                         </div>
                                     )
                                 }
 
-                                // for attacking players:
-                                if (!isDefending) {
-
-                                    // render just the card if it's already been placed...
-                                    if (item.length === 1) {
-                                        const showBlocking = !placeMap[index] && item.length === 1 && this.checkForFreePreviousSlots(index);
-
-                                        return (
-                                            <div key={index}
-                                                 style={{
-                                                     // move to a class
-                                                     marginRight: 0
-                                                 }}
-                                                 className={clsx(styles.Item, {
-                                                     [styles.BlockHovering]: showBlocking,
-                                                 })}>
-                                                <Card
-                                                    style={{
-                                                        position: "absolute",
-                                                        zIndex: 0,
-                                                    }}
-                                                    {...item[0]}
-                                                    useBackground
-                                                />
-                                            </div>
-                                        );
-                                    }
-
-                                    return (
-                                        <AttackingDrop
-                                            key={index}
-                                            canPlace={this.checkForFreePreviousSlots(index) && placeMap[index]}
-                                            className={clsx({
-                                                [styles.BlockHovering]: shouldBlock,
-                                            })}
-                                            card={item[0]}
-                                            index={index}
-                                        />
-                                    );
-                                } else {
-                                    // The card has already been covered by the player...
-                                    if (item.length === 0) {
-                                        // edge case where defending player can re-direct the attack...
-                                        if (placeMap[index] && index !== 0) {
-                                            return (
-                                                <AttackingDrop
-                                                    key={index}
-                                                    canPlace={this.checkForFreePreviousSlots(index)}
-                                                    className={clsx({
-                                                        [styles.BlockHovering]: shouldBlock,
-                                                    })}
-                                                    card={item[0]}
-                                                    index={index}
-                                                />
-                                            );
-                                        }
-
-                                        // if no cards are currently present on the pile just render a placeholder...
-                                        return (
-                                            <div key={index} className={clsx(styles.Item, {
-                                                [styles.BlockHovering]: shouldBlock,
-                                            })}>
-                                                <Card/>
-                                            </div>
-                                        );
-                                    }
-
-                                    return (<DefendingDrop
+                                return (
+                                    <AttackingDrop
                                         key={index}
-                                        canPlace={placeMap[index]}
-                                        card={item[1]}
-                                        bottomCard={item[0]}
+                                        canPlace={!isPreviousHolderFree(tableTop, index) && props.placeMap[index]}
+                                        className={clsx({
+                                            [styles.BlockHovering]: shouldBlock,
+                                        })}
                                         index={index}
-                                    />);
-                                }
-                            })
-                        }
-                    </div>
-                </div>
-                <div className={styles.Deck}>
-                    {this.props.children}
+                                    />
+                                )
+                            }
+
+
+                        })
+                    }
                 </div>
             </div>
-        );
-    }
+            <div className={styles.Deck}>{props.children}</div>
+        </div>
+    );
 }
 
 Table.propTypes = {
     className: PropTypes.string,
-    isDefending: PropTypes.bool.isRequired,
     placeMap: PropTypes.arrayOf(PropTypes.bool).isRequired,
-    tableTop: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.shape({
-        src: PropTypes.string,
-        value: PropTypes.string
-    }))).isRequired,
-    hand: PropTypes.arrayOf(PropTypes.shape({src: PropTypes.string, value: PropTypes.string})).isRequired,
-};
-
-Table.defaultProps = {
-    tableTop: {},
-    hand: []
 }
 
 export default Table;

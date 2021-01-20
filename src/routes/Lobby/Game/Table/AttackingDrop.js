@@ -23,18 +23,7 @@ const AttackingDrop = props => {
                             [styles.CanPlace]: props.canPlace,
                         })}
                     >
-                        {
-                            props.card && (
-                                <Card
-                                    // If an item was added to the card holder, use that
-                                    // value...
-                                    {...(props.card && {
-                                        ...props.card,
-                                        useBackground: true
-                                    })}
-                                />
-                            )
-                        }
+                        <Card useBackground={false}/>
                         {provided.placeholder}
                     </div>
                 );

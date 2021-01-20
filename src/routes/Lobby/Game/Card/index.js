@@ -29,7 +29,7 @@ Card.defaultProps = {
     draggable: false,
     value: "",
     src: "",
-    useBackground: false
+    useBackground: true
 }
 
 export default Card;

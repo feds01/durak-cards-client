@@ -20,31 +20,7 @@ const DefendingDrop = props => {
                             [styles.BlockHovering]: !props.canPlace,
                         })}
                     >
-                        <Card
-                            // If an item was added to the card holder, use that
-                            // value...
-                            style={{
-                                position: "absolute",
-                                zIndex: 0,
-                            }}
-                            {...(props.bottomCard && {
-                                ...props.bottomCard,
-                                useBackground: true
-                            })}
-                        />
-
-                        {
-                            props.card && (
-                                <Card
-                                    // If an item was added to the card holder, use that
-                                    // value...
-                                    {...(props.card && {
-                                        ...props.card,
-                                        useBackground: true
-                                    })}
-                                />
-                            )
-                        }
+                        <Card {...props.card} style={{ position: "absolute", zIndex: 0}} />
                         {provided.placeholder}
                     </div>
                 );
@@ -56,7 +32,6 @@ const DefendingDrop = props => {
 DefendingDrop.propTypes = {
     canPlace: PropTypes.bool.isRequired,
     card: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}),
-    bottomCard: PropTypes.shape({src: PropTypes.string, value: PropTypes.string}).isRequired,
     index: PropTypes.number.isRequired,
 };
 
