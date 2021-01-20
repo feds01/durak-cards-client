@@ -46,18 +46,21 @@ export function saveSetting(name, value) {
 
         // save the setting to localStorage
         localStorage.setItem("settings", JSON.stringify(settings));
+        window.dispatchEvent( new Event('storage') );
     } catch (e) {
         const defaults = defaultSettings;
         defaults[name] = value;
 
         // save the setting to localStorage
         localStorage.setItem("settings", JSON.stringify(defaults));
+        window.dispatchEvent( new Event('storage') );
     }
 }
 
 export function saveSettings(settings) {
     try {
         localStorage.setItem("settings", JSON.stringify(settings));
+        window.dispatchEvent( new Event('storage') );
     } catch (e) {
         console.warn("Failed to save settings.");
     }
@@ -65,4 +68,5 @@ export function saveSettings(settings) {
 
 export function resetSettings() {
     localStorage.setItem("settings", JSON.stringify(defaultSettings));
+    window.dispatchEvent( new Event('storage') );
 }

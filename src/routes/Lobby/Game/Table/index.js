@@ -8,6 +8,7 @@ import AttackingDrop from "./AttackingDrop";
 import DefendingDrop from "./DefendingDrop";
 import {useGameState} from "../GameContext";
 import {isPreviousHolderFree} from "../../../../utils/placement";
+import Deck from "../Deck";
 
 
 const Table = (props) => {
@@ -24,7 +25,7 @@ const Table = (props) => {
                             // player is a defender or not, the render process is identical.
                             if (holder.length === 2) {
                                 return (
-                                    <div key={index}>
+                                    <div key={holder[0].value + holder[1].value}>
                                         <Card className={styles.Shifted} {...holder[0]}/>
                                         <Card className={styles.Tilted} {...holder[1]}/>
                                     </div>
@@ -37,7 +38,7 @@ const Table = (props) => {
                                 if (holder.length === 1) {
                                     return (
                                         <DefendingDrop
-                                            key={index}
+                                            key={holder[0].value}
                                             canPlace={props.placeMap[index]}
                                             card={holder[0]}
                                             index={index}
@@ -59,7 +60,7 @@ const Table = (props) => {
                             } else {
                                 if (holder.length === 1) {
                                     return (
-                                        <div key={index} className={styles.Item}>
+                                        <div key={holder[0].value} className={styles.Item}>
                                             <Card {...holder[0]}/>
                                         </div>
                                     )
@@ -74,15 +75,15 @@ const Table = (props) => {
                                         })}
                                         index={index}
                                     />
-                                )
+                                );
                             }
-
-
                         })
                     }
                 </div>
             </div>
-            <div className={styles.Deck}>{props.children}</div>
+            <div className={styles.Deck}>
+                <Deck/>
+            </div>
         </div>
     );
 }

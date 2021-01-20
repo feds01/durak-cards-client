@@ -20,8 +20,22 @@ export function isPreviousHolderFree(tableTop, index) {
 /**
  * Generic function to check if a card can be used in play on the table.
  * */
-export function canPlace(card, tableTop, trumpSuit, playerRef) {
+export function canPlace(cards, tableTop, isDefending, trumpSuit, playerRef) {
+    const allNumerics = new Set(tableTop.flat().map(card => parseCard(card.value).value));
 
+    // build an array for the size
+    const N = Math.min(tableTop.filter((item) => item.length > 0).length + 1, 6);
+    let a = Array(N), i = 0;
+    while (i < N) a[i++] = i - 1;
+
+    return cards.map((card) => {
+        if (!isDefending) {
+            return allNumerics.size === 0 || allNumerics.has(parseCard(card.value).value);
+        } else {
+            return a.map((idx) => canPlaceCard(card.value, idx, tableTop, isDefending, trumpSuit, playerRef))
+                .some(k => k);
+        }
+    });
 }
 
 export function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, playerRef) {

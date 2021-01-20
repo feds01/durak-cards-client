@@ -6,7 +6,6 @@ import debounce from "lodash.debounce";
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
 
-import Deck from "./Deck";
 import Table from "./Table";
 import Player from "./Player";
 import Header from "./Header";
@@ -30,6 +29,7 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // number of opponents in the game. The player avatars will be added depending
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
+import {SettingProvider} from "../../../contexts/SettingContext";
 
 function delay(fn, time = 200) {
     return new Promise((resolve) => {
@@ -486,65 +486,67 @@ class Game extends React.Component {
         const {isDragging, showAnnouncement, playerOrder, showVictory} = this.state;
 
         return (
-            <GameContext.Provider value={this.state.game}>
-                {showAnnouncement && !showVictory && (
-                    <Announcement onFinish={() => this.setState({showAnnouncement: false})}>Attacking!</Announcement>
-                )}
-                {showVictory && (
-                    <VictoryDialog
-                        onNext={() => {
-                            socket.emit(ServerEvents.JOIN_GAME);
-                        }}
-                        name={lobby.name}
-                        players={playerOrder}
-                    />
-                )}
-                <DragDropContext
-                    onBeforeDragStart={this.onBeforeDragStart}
-                    onDragEnd={this.onDragEnd}
-                    onBeforeCapture={this.onBeforeCapture}
-                    sensors={[
-                        (api) => this.setState({dragApi: api})
-                    ]}
-                >
-                    <div className={styles.GameContainer}>
-                        <Header className={styles.GameHeader} countdown={lobby.roundTimeout}/>
-                        <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
-                            {this.renderPlayerRegion("players-top")}
+            <SettingProvider>
+                <GameContext.Provider value={this.state.game}>
+                    {showAnnouncement && !showVictory && (
+                        <Announcement onFinish={() => this.setState({showAnnouncement: false})}>Attacking!</Announcement>
+                    )}
+                    {showVictory && (
+                        <VictoryDialog
+                            onNext={() => {
+                                socket.emit(ServerEvents.JOIN_GAME);
+                            }}
+                            name={lobby.name}
+                            players={playerOrder}
+                        />
+                    )}
+                    <DragDropContext
+                        onBeforeDragStart={this.onBeforeDragStart}
+                        onDragEnd={this.onDragEnd}
+                        onBeforeCapture={this.onBeforeCapture}
+                        sensors={[
+                            (api) => this.setState({dragApi: api})
+                        ]}
+                    >
+                        <div className={styles.GameContainer}>
+                            <Header className={styles.GameHeader} countdown={lobby.roundTimeout}/>
+                            <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
+                                {this.renderPlayerRegion("players-top")}
+                            </div>
+                            <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
+                                {this.renderPlayerRegion("players-left")}
+                            </div>
+
+                            <Table
+                                className={styles.GameTable}
+                                placeMap={this.state.canPlaceMap}
+                            />
+
+                            <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
+                                {this.renderPlayerRegion("players-right")}
+                            </div>
+
+                            <CardHolder className={styles.GameFooter}>
+                                <PlayerActions
+                                    sortRef={this.sortRef}
+                                    socket={socket}
+                                    isDragging={isDragging}
+                                    moveCards={this.moveCards}
+                                    canForfeit={this.canForfeit() && !isDragging}
+                                    setCards={(deck) => {
+                                        this.setState((prevState) => ({
+                                            game: {
+                                                ...prevState.game,
+                                                deck
+                                            }
+                                        }))
+                                    }}/>
+                            </CardHolder>
                         </div>
-                        <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
-                            {this.renderPlayerRegion("players-left")}
-                        </div>
-                        <Table
-                            className={styles.GameTable}
-                            placeMap={this.state.canPlaceMap}
-                        >
-                            <Deck/>
-                        </Table>
-                        <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
-                            {this.renderPlayerRegion("players-right")}
-                        </div>
-                        <CardHolder className={styles.GameFooter}>
-                            <PlayerActions
-                                sortRef={this.sortRef}
-                                socket={socket}
-                                isDragging={isDragging}
-                                moveCards={this.moveCards}
-                                canForfeit={this.canForfeit() && !isDragging}
-                                setCards={(deck) => {
-                                    this.setState((prevState) => ({
-                                        game: {
-                                            ...prevState.game,
-                                            deck
-                                        }
-                                    }))
-                                }}/>
-                        </CardHolder>
-                    </div>
-                </DragDropContext>
-            </GameContext.Provider>
-        )
-            ;
+                    </DragDropContext>
+                </GameContext.Provider>
+            </SettingProvider>
+        );
     }
 }
 
