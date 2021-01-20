@@ -16,7 +16,7 @@ const CardHolder = props => {
     const {deck, isDefending, trumpCard, players, tableTop} = useGameState();
 
     useEffect(() => {
-        if (playSuggestions && tableTop.length > 0) {
+        if (playSuggestions) {
             let nextPlayer;
 
             if (isDefending) {
