@@ -132,9 +132,12 @@ const PlayerActions = props => {
                 </WhiteButton>
             </div>
 
-            <div className={styles.Status}>
-                <StatusIcon out={out} isDefending={isDefending}/>
-                <span>{statusText}</span>
+            <div style={{display: "inline-flex"}}>
+                <div className={styles.Count}>{deck.length}</div>
+                <div className={styles.Status}>
+                    <StatusIcon out={out} isDefending={isDefending}/>
+                    <span>{statusText}</span>
+                </div>
             </div>
         </div>
     );

@@ -10,7 +10,9 @@
   font-size: 100%;
   padding: 0.3em;
 
-  & .Status {
+  & .Status, .Count {
+    user-select: none;
+    margin-left: 8px;
     display: inline-flex;
     border-radius: 4px;
     background: #e0e0e0;

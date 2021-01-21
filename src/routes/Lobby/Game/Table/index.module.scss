@@ -19,6 +19,7 @@
   height: 100%;
 
   & .Item {
+    cursor: default !important;
     border-radius: 12px;
     box-sizing: content-box;
     border: 2px transparent solid;
@@ -32,12 +33,14 @@
   }
 
   & .Shifted {
+    cursor: default;
     margin-right: 20px;
     position: absolute;
     z-index: 0;
   }
 
   & .Tilted {
+    cursor: default;
     z-index: 1;
     transform: rotate(10deg) translateX(10px);
   }
