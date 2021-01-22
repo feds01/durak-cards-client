@@ -1,9 +1,12 @@
 import PropTypes from 'prop-types';
 import React, {useEffect} from 'react';
 import styles from "./index.module.scss";
+import {useGameState} from "../GameContext";
 
 
-const Announcement = ({onFinish, children}) => {
+const Announcement = ({onFinish}) => {
+    const {isDefending} = useGameState();
+
     useEffect(() => {
         const timeout = setTimeout(() => {
             onFinish();
@@ -16,7 +19,7 @@ const Announcement = ({onFinish, children}) => {
 
     return (
         <div className={styles.Announcement}>
-            <h1>{children}</h1>
+            <h1>{isDefending ? "Defending!" : "Attacking!"}</h1>
         </div>
     );
 };

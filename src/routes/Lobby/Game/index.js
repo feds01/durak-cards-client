@@ -30,6 +30,7 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
 import {SettingProvider} from "../../../contexts/SettingContext";
+import {useHistory} from "react-router";
 
 function delay(fn, time = 200) {
     return new Promise((resolve) => {
@@ -309,7 +310,7 @@ class Game extends React.Component {
      *
      * @returns {boolean|null} Whether to re-render or not.
      * */
-    handleGameStateUpdate(update) {
+    handleGameStateUpdate({update, meta = []}) {
         // prevent updates from being applied to table-top or user deck whilst a drag
         // event is occurring. We can attempt to merge the 'state' after the drag update
         // completes gracefully or not. If the state merge fails, we can always ask the
@@ -328,6 +329,21 @@ class Game extends React.Component {
             });
 
             return null;
+        }
+
+
+        if (meta.length > 0) {
+            meta.forEach((event) => {
+
+                // play the place card sound if some one placed a card
+                if (event.type === "place" || event.type === "cover") {
+                    this.props.placeCard();
+                }
+
+                if (event.type === "new_round" && Object.values(event.actors).includes(this.props.lobby.name)) {
+                    this.setState({showAnnouncement: true});
+                }
+            });
         }
 
         const tableTop = Object.entries(update.tableTop).map((cards) => {
@@ -410,7 +426,7 @@ class Game extends React.Component {
     componentDidMount() {
         // The user refreshed the page and maybe re-joined
         if (this.props.game !== null && typeof this.props.game !== 'undefined') {
-            this.handleGameStateUpdate(this.props.game);
+            this.handleGameStateUpdate({update: this.props.game});
         }
 
         // setup key listener for shortcuts.
@@ -489,12 +505,15 @@ class Game extends React.Component {
             <SettingProvider>
                 <GameContext.Provider value={this.state.game}>
                     {showAnnouncement && !showVictory && (
-                        <Announcement onFinish={() => this.setState({showAnnouncement: false})}>Attacking!</Announcement>
+                        <Announcement onFinish={() => this.setState({showAnnouncement: false})}/>
                     )}
                     {showVictory && (
                         <VictoryDialog
                             onNext={() => {
                                 socket.emit(ServerEvents.JOIN_GAME);
+                            }}
+                            onExit={() => {
+                                this.props.history.push("/");
                             }}
                             name={lobby.name}
                             players={playerOrder}
@@ -560,11 +579,12 @@ Game.propTypes = {
     placeCard: PropTypes.func,
 };
 
-const WithSound = (props) => {
+const WithSoundAndLocation = (props) => {
     const [beginRound] = useSound(begin, {volume: 0.25});
     const [placeCard] = useSound(place, {volume: 0.25});
+    const history = useHistory();
 
-    return <Game {...props} beginRound={beginRound} placeCard={placeCard}/>;
+    return <Game {...props} beginRound={beginRound} history={history} placeCard={placeCard}/>;
 }
 
-export default WithSound;
+export default WithSoundAndLocation;

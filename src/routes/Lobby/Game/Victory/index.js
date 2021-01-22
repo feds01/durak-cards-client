@@ -6,6 +6,7 @@ import Dialog from '@material-ui/core/Dialog';
 import Button from "@material-ui/core/Button";
 import Avatar from "@material-ui/core/Avatar";
 import PersonIcon from "@material-ui/icons/Person";
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 import victorySound from "./../../../../assets/sound/victory.mp3";
 import defeatSound from "./../../../../assets/sound/defeat.mp3";
@@ -16,7 +17,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 // Maybe move into a manifest file
-const encouragements = ["Better luck next time!", "Better than defeat.", "The card weren't in your favour"]
+const encouragements = ["Better luck next time!", "Better than defeat.", "The cards weren't in your favour"]
 
 const VictoryDialog = props => {
     const [open, setOpen] = useState(true);
@@ -46,6 +47,8 @@ const VictoryDialog = props => {
         <Dialog
             className={styles.Container}
             open={open}
+            disableEscapeKeyDown
+            onBackdropClick={() => {}}
             TransitionComponent={Transition}
             TransitionProps={{
                 onEntered: () => {
@@ -57,7 +60,13 @@ const VictoryDialog = props => {
                 style: {background: "none"}
             }}
             keepMounted
-            onClose={() => setOpen(false)}
+            onClose={(event, reason) => {
+                // prevent the user from exiting the victory dialog when they click on the
+                // backdrop.
+                if (reason === "backdropClick") return;
+
+                setOpen(false)
+            }}
         >
             <div className={styles.Dialog}>
                 <h2>{title}</h2>
@@ -73,19 +82,35 @@ const VictoryDialog = props => {
                 </i>
                 <p>{encouragement}</p>
 
-                <Button
-                    variant={'contained'}
-                    onClick={props.onNext}
-                    disableElevation
-                    style={{
-                        fontSize: 16,
-                        marginTop: 19
-                    }}
-                    disableRipple
-                    color={'primary'}
-                >
-                    Next Game
-                </Button>
+                <div className={styles.Buttons}>
+                    <Button
+                        variant={'contained'}
+                        onClick={props.onExit}
+                        disableElevation
+                        style={{
+                            fontSize: 16,
+                            marginTop: 19
+                        }}
+                        disableRipple
+                        color={'primary'}
+                    >
+                        Close
+                    </Button>
+                    <Button
+                        variant={'contained'}
+                        onClick={props.onNext}
+                        endIcon={<ArrowForwardIcon />}
+                        disableElevation
+                        style={{
+                            fontSize: 16,
+                            marginTop: 19
+                        }}
+                        disableRipple
+                        color={'primary'}
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
         </Dialog>
     );

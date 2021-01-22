@@ -35,8 +35,7 @@ export function canPlace(cards, tableTop, isDefending, canAttack, trumpSuit, pla
             return allNumerics.size === 0 || allNumerics.has(parseCard(card.value).value);
         } else {
             // This is somewhat inefficient, we could be using 'allNumerics' here somehow.
-            return a.map((idx) => canPlaceCard(card.value, idx, tableTop, isDefending, trumpSuit, playerRef))
-                .some(k => k);
+            return a.map(idx => idx).some((idx) => canPlaceCard(card.value, idx, tableTop, isDefending, trumpSuit.suit, playerRef));
         }
     });
 }

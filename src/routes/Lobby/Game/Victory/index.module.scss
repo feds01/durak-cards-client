@@ -17,6 +17,17 @@
     font-size: 52px;
     margin-bottom: 0.5em;
   }
+
+  & .Buttons {
+    display: flex;
+    flex-direction: row;
+    width: inherit;
+    justify-content: space-evenly;
+
+    & button {
+      margin: 0 0.5em;
+    }
+  }
 }
 
 .Avatar {
