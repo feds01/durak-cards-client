@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 import styles from "./index.module.scss";
 
 import Card from "../Card";
+import Deck from "../Deck";
 import AttackingDrop from "./AttackingDrop";
 import DefendingDrop from "./DefendingDrop";
 import {useGameState} from "../GameContext";
 import {isPreviousHolderFree} from "../../../../utils/placement";
-import Deck from "../Deck";
 
 
 const CardHolder = React.memo(function CardHolder({bottom, top}) {
