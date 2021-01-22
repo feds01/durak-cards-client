@@ -11,6 +11,16 @@ import {isPreviousHolderFree} from "../../../../utils/placement";
 import Deck from "../Deck";
 
 
+const CardHolder = React.memo(function CardHolder({bottom, top}) {
+    return (
+        <div>
+            <Card className={styles.Shifted} {...bottom}/>
+            <Card className={styles.Tilted} {...top}/>
+        </div>
+    )
+
+});
+
 const Table = (props) => {
     const {tableTop, isDefending} = useGameState();
 
@@ -25,11 +35,8 @@ const Table = (props) => {
                             // player is a defender or not, the render process is identical.
                             if (holder.length === 2) {
                                 return (
-                                    <div key={holder[0].value + holder[1].value}>
-                                        <Card className={styles.Shifted} {...holder[0]}/>
-                                        <Card className={styles.Tilted} {...holder[1]}/>
-                                    </div>
-                                )
+                                    <CardHolder key={holder[0].value + holder[1].value} bottom={holder[0]} top={holder[1]}/>
+                                );
                             }
 
                             const shouldBlock = !props.placeMap[index] && !isPreviousHolderFree(tableTop, index);

@@ -5,8 +5,10 @@ import styles from "./index.module.scss";
 import {Droppable} from "react-beautiful-dnd";
 
 import Card from "../Card";
+import {useGameState} from "../GameContext";
 
 const AttackingDrop = props => {
+    const {out} = useGameState();
     const isDropDisabled = typeof props.card !== "undefined" || !props.canPlace;
 
     return (
@@ -20,7 +22,7 @@ const AttackingDrop = props => {
                         ref={provided.innerRef}
                         className={clsx(styles.Item, props.className, {
                             [styles.Hovering]: props.canPlace && snapshot.isDraggingOver,
-                            [styles.CanPlace]: props.canPlace,
+                            [styles.CanPlace]: props.canPlace && !out,
                         })}
                     >
                         <Card useBackground={false}/>

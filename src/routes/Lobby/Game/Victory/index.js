@@ -1,5 +1,8 @@
 import PropTypes from 'prop-types';
 import styles from './index.module.scss';
+import useSound from "use-sound";
+import {ServerEvents} from "shared";
+import {useHistory} from "react-router";
 import React, {useEffect, useState} from 'react';
 import Zoom from '@material-ui/core/Zoom';
 import Dialog from '@material-ui/core/Dialog';
@@ -10,7 +13,6 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 
 import victorySound from "./../../../../assets/sound/victory.mp3";
 import defeatSound from "./../../../../assets/sound/defeat.mp3";
-import useSound from "use-sound";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Zoom in ref={ref} {...props} />;
@@ -20,12 +22,21 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const encouragements = ["Better luck next time!", "Better than defeat.", "The cards weren't in your favour"]
 
 const VictoryDialog = props => {
+    const history = useHistory();
     const [open, setOpen] = useState(true);
     const [playVictory] = useSound(victorySound, {volume: 0.25});
     const [playDefeat] = useSound(defeatSound, {volume: 0.25});
 
     const [title, setTitle] = useState("Victory!");
     const [encouragement, setEncouragement] = useState("");
+
+    function onNext() {
+        props.socket.emit(ServerEvents.JOIN_GAME);
+    }
+
+    function onExit() {
+        history.push("/");
+    }
 
     useEffect(() => {
         if (props.players[0].name !== props.name) {
@@ -85,7 +96,7 @@ const VictoryDialog = props => {
                 <div className={styles.Buttons}>
                     <Button
                         variant={'contained'}
-                        onClick={props.onExit}
+                        onClick={onExit}
                         disableElevation
                         style={{
                             fontSize: 16,
@@ -98,7 +109,7 @@ const VictoryDialog = props => {
                     </Button>
                     <Button
                         variant={'contained'}
-                        onClick={props.onNext}
+                        onClick={onNext}
                         endIcon={<ArrowForwardIcon />}
                         disableElevation
                         style={{
@@ -117,8 +128,7 @@ const VictoryDialog = props => {
 };
 
 VictoryDialog.propTypes = {
-    name: PropTypes.string.isRequired,
-    onNext: PropTypes.func.isRequired,
+    socket: PropTypes.object,
     players: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 

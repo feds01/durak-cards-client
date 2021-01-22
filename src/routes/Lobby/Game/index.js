@@ -2,7 +2,6 @@ import clsx from "clsx";
 import React from "react";
 import PropTypes from 'prop-types';
 import useSound from "use-sound";
-import {useHistory} from "react-router";
 import debounce from "lodash.debounce";
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
@@ -114,9 +113,8 @@ class Game extends React.Component {
      *
      * */
     onBeforeCapture(event) {
-        const {isDefending, trumpCard, canAttack, tableTop, deck} = this.state.game;
-
-        const card = deck[parseInt(event.draggableId.split("-")[1])];
+        const {isDefending, trumpCard, canAttack, tableTop} = this.state.game;
+        const card = event.draggableId;
 
         // This is used for some more advanced checking if cards can be
         // placed down by the current player. All of the logic is internally
@@ -135,7 +133,7 @@ class Game extends React.Component {
         this.setState({
             canPlaceMap: Object.keys(tableTop).map((item, index) => {
                 return (!isDefending === canAttack) &&
-                    canPlaceCard(card.value, index, tableTop, isDefending, trumpCard.suit, nextPlayer);
+                    canPlaceCard(card, index, tableTop, isDefending, trumpCard.suit, nextPlayer);
             })
         });
     }
@@ -209,8 +207,7 @@ class Game extends React.Component {
                     // emit a socket event to notify that the player has made a move...
                     this.props.socket.emit(ServerEvents.MOVE, {
                         ...(isDefending && {
-                            // handle the case where the player is re-directing the attack vector to the next
-                            //player.
+                            // handle the case where the player is re-directing the attack vector to the next player.
                             type: result.dest.length === 2 ? MoveTypes.COVER : MoveTypes.PLACE,
                             card: item.value,
                             pos: index,
@@ -320,14 +317,14 @@ class Game extends React.Component {
                 this.props.placeCard();
             }
 
-            if (event.type === "new_round") {
+            if (event.type === "new_round" || event.type === "start") {
 
                 // we want to pause the game for 2 secs to show that the round finished...
                 await delay(() => {
                     if (Object.values(event.actors).includes(this.props.lobby.name)) {
                         this.setState({showAnnouncement: true});
                     }
-                }, 2000);
+                }, event.type === "start" ? 0 : 1000);
             }
         }
 
@@ -494,12 +491,7 @@ class Game extends React.Component {
                     )}
                     {showVictory && (
                         <VictoryDialog
-                            onNext={() => {
-                                socket.emit(ServerEvents.JOIN_GAME);
-                            }}
-                            onExit={() => {
-                                this.props.history.push("/");
-                            }}
+                            socket={socket}
                             name={lobby.name}
                             players={playerOrder}
                         />
@@ -567,9 +559,8 @@ Game.propTypes = {
 const WithSoundAndLocation = (props) => {
     const [beginRound] = useSound(begin, {volume: 0.25});
     const [placeCard] = useSound(place, {volume: 0.25});
-    const history = useHistory();
 
-    return <Game {...props} beginRound={beginRound} history={history} placeCard={placeCard}/>;
+    return <Game {...props} beginRound={beginRound} placeCard={placeCard}/>;
 }
 
 export default WithSoundAndLocation;

@@ -48,8 +48,7 @@ const CardHolder = props => {
                             {
                                 deck.map((item, index) => {
                                     return (
-                                        <Draggable draggableId={`card-${index}`} key={`card-${index}`}
-                                                   index={index}>
+                                        <Draggable draggableId={item.value} key={item.value} index={index}>
                                             {(provided, snapshot) => (
                                                 <div
                                                     {...provided.dragHandleProps}
