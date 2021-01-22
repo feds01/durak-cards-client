@@ -266,7 +266,6 @@ class Game extends React.Component {
                         }
                     }
                 });
-
                 steps--;
             }
 
@@ -288,7 +287,6 @@ class Game extends React.Component {
         switch (event.key.toLowerCase()) {
             case keyBinds.SKIP: {
                 if (this.canForfeit()) {
-                    // TODO: move this function to some context
                     this.props.socket.emit(ServerEvents.MOVE, {
                         type: MoveTypes.FORFEIT,
                     });
@@ -310,7 +308,7 @@ class Game extends React.Component {
      *
      * @returns {boolean|null} Whether to re-render or not.
      * */
-    handleGameStateUpdate({update, meta = []}) {
+    async handleGameStateUpdate({update, meta = []}) {
         // prevent updates from being applied to table-top or user deck whilst a drag
         // event is occurring. We can attempt to merge the 'state' after the drag update
         // completes gracefully or not. If the state merge fails, we can always ask the
@@ -331,19 +329,21 @@ class Game extends React.Component {
             return null;
         }
 
+        for (const event of meta) {
+            // play the place card sound if some one placed a card
+            if (event.type === "place" || event.type === "cover") {
+                this.props.placeCard();
+            }
 
-        if (meta.length > 0) {
-            meta.forEach((event) => {
+            if (event.type === "new_round") {
 
-                // play the place card sound if some one placed a card
-                if (event.type === "place" || event.type === "cover") {
-                    this.props.placeCard();
-                }
-
-                if (event.type === "new_round" && Object.values(event.actors).includes(this.props.lobby.name)) {
-                    this.setState({showAnnouncement: true});
-                }
-            });
+                // we want to pause the game for 2 secs to show that the round finished...
+                await delay(() => {
+                    if (Object.values(event.actors).includes(this.props.lobby.name)) {
+                        this.setState({showAnnouncement: true});
+                    }
+                }, 2000);
+            }
         }
 
         const tableTop = Object.entries(update.tableTop).map((cards) => {
@@ -359,7 +359,6 @@ class Game extends React.Component {
         //      2). Respect the user's order of the cards. A user might re-shuffle their
         //          cards for convenience and therefore we should respect the order instead
         //          of brutishly overwriting it with the server's game state.
-        //
         const newDeck = new Set(update.deck);
         const currentDeck = this.state.game.deck.map((card) => card.value);
         let deckUpdate = this.state.game.deck.concat();
@@ -377,26 +376,23 @@ class Game extends React.Component {
             });
         }
 
-
         // TODO: move deckSize into protocol
-        // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards
-        // on the tableTop.
+        // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards on the tableTop.
         for (let index = 0; index < 6; index++) {
             if (typeof tableTop[index] === 'undefined') {
                 tableTop[index] = [];
             }
         }
 
-        // TODO: figure out here if we should show an announcement based on the update
-        this.setState({
-            game: {
-                ...update,
-                tableTop: tableTop,
-
-                // overwrite the card value with a value and an image source...
-                deck: deckUpdate,
-            },
-        });
+        if (this._isMounted) {
+            this.setState({
+                game: {
+                    ...update,
+                    tableTop: tableTop,
+                    deck: deckUpdate,  // overwrite the card value with a value and an image source...
+                },
+            });
+        }
     }
 
     /**
@@ -424,6 +420,8 @@ class Game extends React.Component {
      * and or propagates a game state if one already exists (passed in from parent).
      * */
     componentDidMount() {
+        this._isMounted = true;
+
         // The user refreshed the page and maybe re-joined
         if (this.props.game !== null && typeof this.props.game !== 'undefined') {
             this.handleGameStateUpdate({update: this.props.game});
@@ -453,6 +451,8 @@ class Game extends React.Component {
      * we're simply removing the key listener since we don't need it anymore
      * */
     componentWillUnmount() {
+        this._isMounted = false;
+
         window.removeEventListener("keydown", this.keyListener);
     }
 

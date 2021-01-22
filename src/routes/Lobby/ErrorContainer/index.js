@@ -1,11 +1,14 @@
 import React from 'react';
 import styles from './index.module.scss';
 import Divider from "@material-ui/core/Divider";
+import SentimentVeryDissatisfiedIcon from '@material-ui/icons/SentimentVeryDissatisfied';
 
 class ErrorContainer extends React.Component {
     constructor(props) {
         super(props);
         this.state = {hasError: false, errorString: ""};
+
+        this.handleErrorEvent = this.handleErrorEvent.bind(this);
     }
 
     static getDerivedStateFromError(error) {
@@ -13,14 +16,25 @@ class ErrorContainer extends React.Component {
         return {hasError: true};
     }
 
+    handleErrorEvent(event) {
+        this.setState({
+            hasError: true,
+            errorString: btoa(event.error.stack)
+        });
+    }
+
+    componentDidMount() {
+        window.addEventListener("error", this.handleErrorEvent);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("error", this.handleErrorEvent);
+    }
+
     componentDidCatch(error, errorInfo) {
         this.setState({
             errorString: btoa(error.stack)
-        })
-
-        // TODO:
-        // You can also log the error to an error reporting service
-        // logErrorToMyService(error, errorInfo);
+        });
     }
 
     render() {
@@ -30,14 +44,21 @@ class ErrorContainer extends React.Component {
             return (
                 <div className={styles.Error}>
                     <div style={{
-                     margin: "2em"
+                        margin: "2em"
                     }}>
-                        <h1>:( Something went wrong!</h1>
-                        <h2>Please help out and email me this bug string.</h2>
+                        <div className={styles.Title}>
+                            <SentimentVeryDissatisfiedIcon style={{fontSize: 40}}/>
+                            <h1>Something went wrong!</h1>
+                        </div>
+                        <h2>Please help out and email or send me this bug string.</h2>
                         <Divider/>
                         <b className={styles.ErrorMessage}>{errorString}</b>
                         <Divider/>
-                        <p>Yes Alex is a bad programmer.</p>
+                        <p>
+                            Version: Durachok@{process.env.REACT_APP_VERSION}/{process.env.REACT_APP_DEV_VERSION} on
+                            branch {process.env.REACT_APP_VERSION_BRANCH}<br/>
+                            Running: shared@{process.env.REACT_APP_DEV_SHARED_VERSION}
+                        </p>
                     </div>
                 </div>
             )

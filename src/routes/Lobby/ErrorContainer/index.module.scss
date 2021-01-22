@@ -11,6 +11,18 @@
     word-break: break-all;
   }
 
+  & .Title {
+    user-select: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    & h1 {
+      margin: 0 0 0 8px;
+      font-size: 40px;
+    }
+  }
+
   & p {
     font-family: 'Cabin', sans-serif;
     display: inline-block;
