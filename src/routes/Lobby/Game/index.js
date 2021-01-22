@@ -313,7 +313,7 @@ class Game extends React.Component {
 
                 // we want to pause the game for 2 secs to show that the round finished...
                 await delay(() => {
-                    if (Object.values(event.actors).includes(this.props.lobby.name)) {
+                    if (Object.values(event.actors).includes(this.props.lobby.name) && this._isMounted) {
                         this.setState({showAnnouncement: true});
                     }
                 }, event.type === "start" ? 0 : 1000);
