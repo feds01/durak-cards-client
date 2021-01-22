@@ -5,7 +5,7 @@ const fs = require("fs");
  * Clear .env.local.
  */
 async function clearEnv() {
-    await new Promise((resolve, reject) =>
+    await new Promise<void>((resolve: Function, reject) =>
         fs.writeFile(".env.local", "", (err: Error | null) => {
             if (err) reject(err);
             resolve();
@@ -21,7 +21,7 @@ async function clearEnv() {
  */
 async function writeToEnv(key: string, value: string) {
     const entry = `${key}='${value.trim()}'\n`;
-    await new Promise((resolve, reject) =>
+    await new Promise<void>((resolve, reject) =>
         fs.appendFile(".env.local", entry, (err: Error | null) => {
             if (err) reject(err);
             resolve();
