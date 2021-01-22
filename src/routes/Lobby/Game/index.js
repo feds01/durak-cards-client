@@ -14,6 +14,7 @@ import VictoryDialog from "./Victory";
 import Announcement from "./Announcement";
 import PlayerActions from "./PlayerActions";
 import {GameContext} from "./GameContext";
+import {delay} from "../../../utils/delay";
 import {move, reorder} from "../../../utils/movement";
 import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
@@ -30,15 +31,6 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // number of opponents in the game. The player avatars will be added depending
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
-
-function delay(fn, time = 200) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            fn();
-            resolve();
-        }, time);
-    });
-}
 
 
 class Game extends React.Component {
@@ -556,11 +548,11 @@ Game.propTypes = {
     placeCard: PropTypes.func,
 };
 
-const WithSoundAndLocation = (props) => {
+const WithSound = (props) => {
     const [beginRound] = useSound(begin, {volume: 0.25});
     const [placeCard] = useSound(place, {volume: 0.25});
 
     return <Game {...props} beginRound={beginRound} placeCard={placeCard}/>;
 }
 
-export default WithSoundAndLocation;
+export default WithSound;
