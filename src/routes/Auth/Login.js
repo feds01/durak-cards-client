@@ -19,6 +19,7 @@ import Button from "@material-ui/core/Button";
 import Input from "../../components/Input";
 import {login} from "../../utils/networking";
 import {updateTokens} from "../../utils/auth";
+import Logo from "../../components/Logo";
 
 
 const LoginSchema = Yup.object().shape({
@@ -77,6 +78,7 @@ const LoginRoute = () => {
                             exit={{x: "100vw"}}
                         >
                             <div className={styles.Login}>
+                                <Logo size={48}/>
                                 <h2>Login</h2>
                                 <Input
                                     id={'name'}

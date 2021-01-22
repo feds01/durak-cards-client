@@ -2,6 +2,7 @@ import clsx from "clsx";
 import React from "react";
 import PropTypes from 'prop-types';
 import useSound from "use-sound";
+import {useHistory} from "react-router";
 import debounce from "lodash.debounce";
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
@@ -18,6 +19,7 @@ import {move, reorder} from "../../../utils/movement";
 import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
 import {ClientEvents, MoveTypes, ServerEvents} from "shared";
+import {SettingProvider} from "../../../contexts/SettingContext";
 
 import place from "./../../../assets/sound/place.mp3";
 import begin from "./../../../assets/sound/begin.mp3";
@@ -29,8 +31,6 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // number of opponents in the game. The player avatars will be added depending
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
-import {SettingProvider} from "../../../contexts/SettingContext";
-import {useHistory} from "react-router";
 
 function delay(fn, time = 200) {
     return new Promise((resolve) => {
@@ -66,7 +66,6 @@ class Game extends React.Component {
             showVictory: false,
             showAnnouncement: false,
             isDragging: false,
-            queuedUpdates: [],
         }
 
         // refs
@@ -313,21 +312,7 @@ class Game extends React.Component {
         // event is occurring. We can attempt to merge the 'state' after the drag update
         // completes gracefully or not. If the state merge fails, we can always ask the
         // server for the game state and update the client with said state.
-        // TODO: We could also 'throw' away some updates if they are redundant or are
-        //       automatically applied to the game state with the next update.
-        if (this.state.isDragging) {
-            this.setState(prevState => {
-                const updates = prevState.queuedUpdates;
-                updates.push(update);
-
-                return {
-                    ...prevState,
-                    queuedUpdates: updates,
-                }
-            });
-
-            return null;
-        }
+        if (this.state.isDragging) return null;
 
         for (const event of meta) {
             // play the place card sound if some one placed a card
@@ -409,7 +394,7 @@ class Game extends React.Component {
         }
 
         // we should also update if any of the following updates... canPlaceMap and showVictory
-        // Essentially we are avoiding a re-render on 'isDragging' or 'queuedUpdates' changing.
+        // Essentially we are avoiding a re-render on 'isDragging' or changing.
         return !deepEqual(this.state.canPlaceMap, nextState.canPlaceMap) ||
             this.state.showVictory !== nextState.showVictory ||
             this.state.showAnnouncement !== nextState.showAnnouncement;

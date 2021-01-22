@@ -20,6 +20,7 @@ import ReCaptcha from "react-google-recaptcha";
 import Input from "../../components/Input";
 import {register} from "../../utils/networking";
 import {updateTokens} from "../../utils/auth";
+import Logo from "../../components/Logo";
 
 const RegisterSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email').required('Required'),
@@ -84,6 +85,7 @@ const RegisterForm = (props) => {
                     exit={{x: "-100vw"}}
                 >
                     <div className={styles.Login}>
+                        <Logo size={48}/>
                         <h2>Register</h2>
                         <Input
                             id={'email'}

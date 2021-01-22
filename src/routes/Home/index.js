@@ -20,10 +20,19 @@ const HomeRoute = () => {
 
     // Only fire this on mount
     useEffect(() => {
+        // set body overflow property to hidden to prevent the animation overflow, when user
+        // navigates off the page, reset this to normal.
+        document.getElementsByTagName("body")[0].style.overflow = "hidden";
+
        if (location?.state?.pin) {
            setPin(location.state.pin);
            history.replace('', null);
        }
+
+       return () => {
+           document.getElementsByTagName("body")[0].style.overflow = "auto";
+       }
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
