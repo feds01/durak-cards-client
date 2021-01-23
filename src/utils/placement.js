@@ -55,10 +55,12 @@ export function canPlaceCard(card, pos, tableTop, isDefending, trumpSuit, player
     if (isDefending) {
 
         // special case where defender wants to transfer 'defense' to next player...
-        if (!isPreviousHolderFree(tableTop, pos) &&
-            tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
+        if (
+            pos !== 0 && // the defender can't transfer the attack if no cards have been placed.
             allNumerics.size === 1 &&
             allNumerics.has(attackingCard.value) &&
+            !isPreviousHolderFree(tableTop, pos) &&
+            tableTop.filter(item => item.length > 0).every(item => item.length === 1) &&
 
             // the next player has enough cards to cover the table
             playerRef.deck >= uncoveredCount + 1

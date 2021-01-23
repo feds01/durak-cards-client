@@ -56,8 +56,7 @@ const Table = (props) => {
                                 return (
                                     <AttackingDrop
                                         key={index}
-                                        // TODO: clean-up: we shouldn't have to check for zero-th index case, this should be handled by canPlace func
-                                        canPlace={index !== 0 && props.placeMap[index] && !isPreviousHolderFree(tableTop, index)}
+                                        canPlace={props.placeMap[index] && !isPreviousHolderFree(tableTop, index)}
                                         className={clsx({
                                             [styles.BlockHovering]: shouldBlock && index !== 0,
                                         })}

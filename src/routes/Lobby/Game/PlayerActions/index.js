@@ -7,57 +7,11 @@ import React, {useEffect, useState} from 'react';
 import {experimentalStyled} from "@material-ui/core";
 
 import {StatusIcon} from "../Player";
-import {sort} from "../../../../utils/movement";
+import {useGameState} from "../GameContext";
+import {MoveTypes, ServerEvents} from "shared";
 import {deepEqual} from "../../../../utils/equal";
 import {getSetting} from "../../../../utils/settings";
-import {CardSuits, MoveTypes, parseCard, ServerEvents} from "shared";
-import {useGameState} from "../GameContext";
-
-
-function generateSortMoves(items, sortBySuit = false) {
-    const moves = []
-
-    const ref = items.map((item) => parseCard(item.value));
-    const original = items.map((item) => parseCard(item.value));
-
-    ref.sort((a, b) => {
-        return a.value - b.value
-    })
-
-    // Here, we'll sort by the order the suit appears in the CardSuits object
-    if (sortBySuit) {
-        const suits = Object.keys(CardSuits);
-
-        ref.sort((a, b) => {
-            return suits.indexOf(a.suit) - suits.indexOf(b.suit);
-        });
-    }
-
-    // compute the diff of the objects
-    let diff = original.map((item, index) => ref.findIndex((x) => x.card === item.card) - index);
-
-    while (!diff.every(item => item === 0)) {
-        // get the first non-zero diff so that we can remember it for
-        // generating the moves.
-        const first = diff.findIndex(item => item !== 0);
-
-        // record this as a step
-        moves.push({item: first, steps: diff[first]});
-
-        let temp = {...original[first]}
-        original[first] = {...original[first + diff[first]]};
-        original[first + diff[first]] = temp;
-
-        // we also need to add a move for the shift
-        moves.push({item: first + diff[first] - 1, steps: -(diff[first] - 1)})
-
-
-        // re-compute the diff for the new array
-        diff = original.map((item, index) => ref.findIndex((x) => x.card === item.card) - index);
-    }
-
-    return moves;
-}
+import {generateSortMoves, sort} from "../../../../utils/movement";
 
 const WhiteButton = experimentalStyled(Button)(({theme}) => ({
     color: theme.palette.getContrastText("#e0e0e0"),
@@ -74,12 +28,8 @@ const PlayerActions = props => {
     const {out, canAttack, deck, isDefending} = useGameState();
 
     useEffect(() => {
-        if (out) {
-            setStatusText("VICTORY");
-        } else {
-            setStatusText(isDefending ? "DEFENDING" : (canAttack ? "ATTACKING" : "WAITING"));
-        }
-
+        if (out) setStatusText("VICTORY");
+        else setStatusText(isDefending ? "DEFENDING" : (canAttack ? "ATTACKING" : "WAITING"));
     }, [isDefending, canAttack, out]);
 
 
@@ -88,10 +38,8 @@ const PlayerActions = props => {
     }
 
     function sortCards() {
-
         // See if user has enabled card sort animation
-        // TODO: maybe move magic const to a config: It will only animate for a max of 12 cards
-        if (getSetting("animateCardSort") && deck.length <= 12) {
+        if (getSetting("animateCardSort") && deck.length <= getSetting("maxAnimationItems")) {
             const moves = generateSortMoves(deck, sortBySuit);
 
             if (moves.length !== 0) {

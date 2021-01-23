@@ -1,4 +1,5 @@
 {
   "playSuggestions": false,
-  "animateCardSort": false
+  "animateCardSort": false,
+  "maxAnimationItems": 12
 }

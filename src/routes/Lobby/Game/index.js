@@ -18,8 +18,8 @@ import {delay} from "../../../utils/delay";
 import {move, reorder} from "../../../utils/movement";
 import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
-import {ClientEvents, MoveTypes, ServerEvents} from "shared";
 import {SettingProvider} from "../../../contexts/SettingContext";
+import {ClientEvents, TableSize, MoveTypes, ServerEvents} from "shared";
 
 import place from "./../../../assets/sound/place.mp3";
 import begin from "./../../../assets/sound/begin.mp3";
@@ -181,7 +181,7 @@ class Game extends React.Component {
 
                     // get a copy of the item that just moved
                     const item = deck[source.index];
-                    const result = move(deck, tableTop[index], source, destination);
+                    const result = move(deck, tableTop[index], source.index, destination.index);
 
                     const resultantTableTop = tableTop;
                     resultantTableTop[index] = result.dest;
@@ -350,9 +350,8 @@ class Game extends React.Component {
             });
         }
 
-        // TODO: move deckSize into protocol
         // We should pad 'tableTop' with arrays up to the 6th index if there arent enough cards on the tableTop.
-        for (let index = 0; index < 6; index++) {
+        for (let index = 0; index < TableSize; index++) {
             if (typeof tableTop[index] === 'undefined') {
                 tableTop[index] = [];
             }
