@@ -42,8 +42,8 @@
     "yup": "^0.32.8"
   },
   "scripts": {
-    "start": "ts-node scripts/versioning.ts && react-scripts start",
-    "build": "ts-node scripts/versioning.ts && react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "serve": "serve -s build/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
