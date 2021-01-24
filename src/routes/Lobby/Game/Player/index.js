@@ -2,14 +2,14 @@ import clsx from "clsx";
 import React from 'react';
 import PropTypes from 'prop-types';
 import styles from "./index.module.scss";
+import Badge from "@material-ui/core/Badge";
 import Avatar from "@material-ui/core/Avatar";
 import PersonIcon from '@material-ui/icons/Person';
-import Badge from "@material-ui/core/Badge";
+import withStyles from "@material-ui/core/styles/withStyles";
 
 import {ReactComponent as Crown} from "./../../../../assets/icons/crown.svg";
 import {ReactComponent as Shield} from "./../../../../assets/icons/shield.svg";
 import {ReactComponent as Swords} from "./../../../../assets/icons/swords.svg";
-import withStyles from "@material-ui/core/styles/withStyles";
 
 export const StatusIcon = React.memo(({className, isDefending, out}) => {
 
@@ -38,8 +38,10 @@ const StatusBadge = withStyles(() => ({
 }))(Badge);
 
 const Player = props => {
+    const onClick = () => props.onClick(props.name);
+
     return (
-        <div className={styles.Container}>
+        <div className={styles.Container} {...props.onClick && {onClick}}>
             <StatusBadge
                 overlap="circular"
                 anchorOrigin={{
@@ -54,19 +56,21 @@ const Player = props => {
                         [styles.Starting]: props.beganRound && !props.turned,
                         [styles.Turned]: props.turned && !props.out,
                         [styles.Out]: props.out,
+                        [styles.Clickable]: typeof props.onClick !== 'undefined',
                     })}
                 >
                     <PersonIcon/>
                 </Avatar>
             </StatusBadge>
-            <span className={styles.Text}>{props.name} {!props.out && (`- ${props.deck}`)}</span>
+            <span className={styles.Text}>{props.name} {!props.out && (`- ${Array.isArray(props.deck) ? props.deck.length : props.deck}`)}</span>
         </div>
     );
 };
 
 Player.propTypes = {
     name: PropTypes.string.isRequired,
-    deck: PropTypes.number.isRequired,
+    deck: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.number]).isRequired,
+    onClick: PropTypes.func,
     isDefending: PropTypes.bool.isRequired,
     out: PropTypes.any,
     turned: PropTypes.bool,

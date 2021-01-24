@@ -32,6 +32,10 @@
     &.Out {
       border: 2px gold solid;
     }
+
+    &.Clickable {
+      cursor: pointer;
+    }
   }
 
   & .Text {

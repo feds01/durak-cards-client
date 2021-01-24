@@ -56,6 +56,7 @@ class Game extends React.Component {
             canPlaceMap: Game.EmptyPlaceMap,
             showVictory: false,
             showAnnouncement: false,
+            spectating: null,
             isDragging: false,
         }
 
@@ -70,8 +71,10 @@ class Game extends React.Component {
         this.canForfeit = this.canForfeit.bind(this);
 
         // user interaction with the game board
+        this.setCards = this.setCards.bind(this);
         this.moveCards = this.moveCards.bind(this);
         this.keyListener = this.keyListener.bind(this);
+        this.setSpectator = this.setSpectator.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
         this.onBeforeCapture = this.onBeforeCapture.bind(this);
@@ -258,6 +261,32 @@ class Game extends React.Component {
         }));
     }
 
+    setSpectator(name) {
+        const {players, out} = this.state.game;
+        const {spectating} = this.state;
+
+        // don't update anything if the current spectator is the same
+        if (spectating === name || name === null) return;
+
+        // this should never happen, but the player is not allowed to spectate if they are
+        // not out of the game...
+        if (!out) throw new Error("Cannot spectate player whilst being an active player.");
+        if (!players.map(p => p.name).includes(name)) throw new Error("Cannot spectate non-existent player.")
+
+        const player = players.find(player => player.name === name);
+
+        // set this player's deck as the spectating player's deck
+        this.setState((prevState) => ({
+            spectating: name,
+            game: {
+                ...prevState.game,
+                deck: player.deck.map((card) => {
+                    return {value: card, src: process.env.PUBLIC_URL + `/cards/${card}.svg`};
+                })
+            }
+        }));
+    }
+
     /**
      * Method to handle key presses and invoke some action based on the key.
      *
@@ -313,6 +342,9 @@ class Game extends React.Component {
                     }
                 }, event.type === "start" ? 0 : 1000);
             }
+
+            // Don't do anything if it's a victory
+            if (event.type === "victory") return;
         }
 
         const tableTop = Object.entries(update.tableTop).map((cards) => {
@@ -321,6 +353,17 @@ class Game extends React.Component {
             });
         });
 
+        let deck = update.deck;
+
+        if (update.out && this.state.spectating !== null) {
+            const spectatedPlayer = update.players.find(p => p.name === this.state.spectating);
+
+            // Were they booted or kicked, since this cannot happen even if the player resigns!
+            if (spectatedPlayer) {
+                deck = spectatedPlayer.deck;
+            }
+        }
+
         // Let's be intelligent about how we update the cards since we want avoid 2 things:
         //
         //      1). Avoid flickering when re-rendering cards whilst they are the same.
@@ -328,13 +371,14 @@ class Game extends React.Component {
         //      2). Respect the user's order of the cards. A user might re-shuffle their
         //          cards for convenience and therefore we should respect the order instead
         //          of brutishly overwriting it with the server's game state.
-        const newDeck = new Set(update.deck);
+
+        const newDeck = new Set(deck);
         const currentDeck = this.state.game.deck.map((card) => card.value);
         let deckUpdate = this.state.game.deck.concat();
 
 
         // avoid even updating cards if the userCards are equal
-        if (!arraysEqual(currentDeck, update.deck)) {
+        if (!arraysEqual(currentDeck, deck)) {
 
             // take the intersection of the current deck and the updated new deck
             let intersection = new Set([...currentDeck].filter(x => newDeck.has(x)));
@@ -419,9 +463,9 @@ class Game extends React.Component {
      * we're simply removing the key listener since we don't need it anymore
      * */
     componentWillUnmount() {
-        this._isMounted = false;
-
         window.removeEventListener("keydown", this.keyListener);
+
+        this._isMounted = false;
     }
 
     /**
@@ -435,7 +479,7 @@ class Game extends React.Component {
     renderPlayerRegion(region) {
         const regionOrder = ['players-left', 'players-top', 'players-right'];
 
-        const {players} = this.state.game;
+        const {players, out} = this.state.game;
         const layout = AvatarGridLayout[players.length.toString()];
 
         // don't do anything if no players are currently present or the region isn't being used.
@@ -461,7 +505,7 @@ class Game extends React.Component {
         if (region === "players-left") playerSection = playerSection.reverse();
 
         return playerSection.map((player, index) => {
-            return <Player {...player} key={index}/>
+            return <Player {...player} {...(out && !player.out) && {onClick: this.setSpectator}} key={index}/>
         });
     }
 
