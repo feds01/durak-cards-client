@@ -49,18 +49,8 @@ async function exec(command: string): Promise<string> {
  */
 async function main() {
     await clearEnv();
-
-    await exec("git rev-parse --abbrev-ref HEAD").then((stdout) =>
-        writeToEnv("REACT_APP_VERSION_BRANCH", stdout)
-    );
-
-    await exec("git rev-parse HEAD").then((stdout) =>
-        writeToEnv("REACT_APP_DEV_VERSION", stdout)
-    );
-
-    await exec("grep 'shared' yarn.lock | grep -oEe '[0-9a-f]{40}'").then((stdout) =>
-        writeToEnv("REACT_APP_DEV_SHARED_VERSION", stdout)
-    );
+    await writeToEnv("REACT_APP_NAME", "$npm_package_name");
+    await writeToEnv("REACT_APP_VERSION", "$npm_package_version");
 }
 
 main().catch(console.error);
