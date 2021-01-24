@@ -23,18 +23,25 @@ const WhiteButton = experimentalStyled(Button)(({theme}) => ({
 }));
 
 const PlayerActions = props => {
+    const [allowedToSkip, setAllowedToSkip] = useState(true)
     const [statusText, setStatusText] = useState("");
     const [sortBySuit, setSortBySuit] = useState(false);
-    const {out, canAttack, deck, isDefending} = useGameState();
+    const {out, canAttack, turned, deck, isDefending} = useGameState();
 
     useEffect(() => {
         if (out) setStatusText("VICTORY");
         else setStatusText(isDefending ? "DEFENDING" : (canAttack ? "ATTACKING" : "WAITING"));
-    }, [isDefending, canAttack, out]);
+
+    }, [isDefending, canAttack, turned, out]);
+
+    useEffect(() => {
+        setAllowedToSkip(!turned);
+    }, [turned]);
 
 
     function sendForfeit() {
         props.socket.emit(ServerEvents.MOVE, { type: MoveTypes.FORFEIT});
+        setAllowedToSkip(false);
     }
 
     function sortCards() {
@@ -63,7 +70,7 @@ const PlayerActions = props => {
                 <WhiteButton
                     variant="contained"
                     onClick={sendForfeit}
-                    disabled={!props.canForfeit}
+                    disabled={!props.canForfeit || !allowedToSkip}
                     endIcon={<ClearIcon/>}
                 >
                     {isDefending ? "forfeit" : "skip"}
