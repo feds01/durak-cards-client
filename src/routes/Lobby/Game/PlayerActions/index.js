@@ -32,11 +32,11 @@ const PlayerActions = props => {
         if (out) setStatusText("VICTORY");
         else setStatusText(isDefending ? "DEFENDING" : (canAttack ? "ATTACKING" : "WAITING"));
 
-    }, [isDefending, canAttack, turned, out]);
+    }, [isDefending, canAttack, out]);
 
     useEffect(() => {
         setAllowedToSkip(!turned);
-    }, [turned]);
+    }, [props.canForfeit]);
 
 
     function sendForfeit() {
@@ -68,6 +68,7 @@ const PlayerActions = props => {
         <div className={clsx(props.className, styles.Container)}>
             <div>
                 <WhiteButton
+                    ref={props.skipRef}
                     variant="contained"
                     onClick={sendForfeit}
                     disabled={!props.canForfeit || !allowedToSkip}
@@ -98,7 +99,6 @@ const PlayerActions = props => {
 
 PlayerActions.propTypes = {
     className: PropTypes.string,
-    actionName: PropTypes.string.isRequired,
     isDragging: PropTypes.bool.isRequired,
 
     // actions
@@ -111,15 +111,17 @@ PlayerActions.propTypes = {
         PropTypes.shape({current: PropTypes.instanceOf(Element)})
     ]),
 
+    skipRef: PropTypes.oneOfType([
+        PropTypes.func,
+        PropTypes.shape({current: PropTypes.instanceOf(Element)})
+    ]),
+
     canForfeit: PropTypes.bool.isRequired,
     socket: PropTypes.object.isRequired,
 };
 
 
 PlayerActions.defaultProps = {
-    actionName: "skip",
-    out: false,
-    isDefending: false,
     canForfeit: false,
 };
 

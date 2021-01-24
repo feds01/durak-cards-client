@@ -60,7 +60,8 @@ class Game extends React.Component {
         }
 
         // refs
-        this.sortRef = React.createRef();
+        this.sortButtonRef = React.createRef();
+        this.skipButtonRef = React.createRef();
 
         // rendering helpers
         this.renderPlayerRegion = this.renderPlayerRegion.bind(this);
@@ -73,7 +74,6 @@ class Game extends React.Component {
         this.keyListener = this.keyListener.bind(this);
 
         this.onDragEnd = this.onDragEnd.bind(this);
-        this.onBeforeDragStart = this.onBeforeDragStart(this);
         this.onBeforeCapture = this.onBeforeCapture.bind(this);
         this.handleGameStateUpdate = this.handleGameStateUpdate.bind(this);
     }
@@ -123,21 +123,12 @@ class Game extends React.Component {
         }
 
         this.setState({
+            isDragging: true,
             canPlaceMap: Object.keys(tableTop).map((item, index) => {
                 return (!isDefending === canAttack) &&
                     canPlaceCard(card, index, tableTop, isDefending, trumpCard.suit, nextPlayer);
             })
         });
-    }
-
-    /**
-     * This method is invoked before a react-beautiful-dnd drag event occurs. This method is
-     * used to determine which 'droppable' areas we should disable based on the card that
-     * is being dragged.
-     *
-     * */
-    onBeforeDragStart() {
-        this.setState({isDragging: true});
     }
 
     /**
@@ -157,62 +148,56 @@ class Game extends React.Component {
             return this.setState({isDragging: false, canPlaceMap: Game.EmptyPlaceMap});
         }
 
-        switch (source.droppableId) {
-            case destination.droppableId:
-                this.setState(prevState => ({
-                    isDragging: false,
-                    canPlaceMap: Game.EmptyPlaceMap,
-                    game: {
-                        ...prevState.game,
-                        deck: reorder(
-                            this.state.game.deck,
-                            source.index,
-                            destination.index
-                        ),
-                    },
-                }));
-                break;
-            default:
-                if (destination.droppableId.startsWith("holder-")) {
-                    const {isDefending, tableTop, deck} = this.state.game;
+        if (source.droppableId === destination.droppableId) {
+            this.setState(prevState => ({
+                isDragging: false,
+                canPlaceMap: Game.EmptyPlaceMap,
+                game: {
+                    ...prevState.game,
+                    deck: reorder(
+                        this.state.game.deck,
+                        source.index,
+                        destination.index
+                    ),
+                },
+            }));
+        } else if (destination.droppableId.startsWith("holder-")) {
+            const {isDefending, tableTop, deck} = this.state.game;
 
-                    // get the index and check if it currently exists on the table top
-                    const index = parseInt(destination.droppableId.split("-")[1]);
+            // get the index and check if it currently exists on the table top
+            const index = parseInt(destination.droppableId.split("-")[1]);
 
-                    // get a copy of the item that just moved
-                    const item = deck[source.index];
-                    const result = move(deck, tableTop[index], source.index, destination.index);
+            // get a copy of the item that just moved
+            const item = deck[source.index];
+            const result = move(deck, tableTop[index], source.index, destination.index);
 
-                    const resultantTableTop = tableTop;
-                    resultantTableTop[index] = result.dest;
+            const resultantTableTop = tableTop;
+            resultantTableTop[index] = result.dest;
 
-                    this.setState(prevState => ({
-                        isDragging: false,
-                        canPlaceMap: Game.EmptyPlaceMap,
-                        game: {
-                            ...prevState.game,
-                            deck: result.src,
-                            tableTop: resultantTableTop
-                        },
-                    }));
+            this.setState(prevState => ({
+                isDragging: false,
+                canPlaceMap: Game.EmptyPlaceMap,
+                game: {
+                    ...prevState.game,
+                    deck: result.src,
+                    tableTop: resultantTableTop
+                },
+            }));
 
-                    // emit a socket event to notify that the player has made a move...
-                    this.props.socket.emit(ServerEvents.MOVE, {
-                        ...(isDefending && {
-                            // handle the case where the player is re-directing the attack vector to the next player.
-                            type: result.dest.length === 2 ? MoveTypes.COVER : MoveTypes.PLACE,
-                            card: item.value,
-                            pos: index,
-                        }),
+            // emit a socket event to notify that the player has made a move...
+            this.props.socket.emit(ServerEvents.MOVE, {
+                ...(isDefending && {
+                    // handle the case where the player is re-directing the attack vector to the next player.
+                    type: result.dest.length === 2 ? MoveTypes.COVER : MoveTypes.PLACE,
+                    card: item.value,
+                    pos: index,
+                }),
 
-                        ...(!isDefending && {
-                            type: MoveTypes.PLACE,
-                            card: item.value
-                        })
-                    })
-                }
-
-                break;
+                ...(!isDefending && {
+                    type: MoveTypes.PLACE,
+                    card: item.value
+                })
+            });
         }
     }
 
@@ -262,6 +247,18 @@ class Game extends React.Component {
     }
 
     /**
+     * Method to set the player deck.
+     * */
+    setCards(deck) {
+        this.setState((prevState) => ({
+            game: {
+                ...prevState.game,
+                deck
+            }
+        }));
+    }
+
+    /**
      * Method to handle key presses and invoke some action based on the key.
      *
      * @param {KeyboardEvent} event - The event to process
@@ -275,14 +272,12 @@ class Game extends React.Component {
         switch (event.key.toLowerCase()) {
             case keyBinds.SKIP: {
                 if (this.canForfeit()) {
-                    this.props.socket.emit(ServerEvents.MOVE, {
-                        type: MoveTypes.FORFEIT,
-                    });
+                    this.skipButtonRef?.current.click();
                 }
                 break;
             }
             case keyBinds.SORT: {
-                this.sortRef?.current.click();
+                this.sortButtonRef?.current.click();
                 break;
             }
             default: {
@@ -488,7 +483,6 @@ class Game extends React.Component {
                         />
                     )}
                     <DragDropContext
-                        onBeforeDragStart={this.onBeforeDragStart}
                         onDragEnd={this.onDragEnd}
                         onBeforeCapture={this.onBeforeCapture}
                         sensors={[
@@ -515,19 +509,14 @@ class Game extends React.Component {
 
                             <CardHolder className={styles.GameFooter}>
                                 <PlayerActions
-                                    sortRef={this.sortRef}
+                                    sortRef={this.sortButtonRef}
+                                    skipRef={this.skipButtonRef}
+
                                     socket={socket}
                                     isDragging={isDragging}
                                     moveCards={this.moveCards}
                                     canForfeit={this.canForfeit() && !isDragging}
-                                    setCards={(deck) => {
-                                        this.setState((prevState) => ({
-                                            game: {
-                                                ...prevState.game,
-                                                deck
-                                            }
-                                        }))
-                                    }}/>
+                                    setCards={this.setCards}/>
                             </CardHolder>
                         </div>
                     </DragDropContext>

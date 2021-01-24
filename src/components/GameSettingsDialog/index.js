@@ -101,7 +101,7 @@ const GameSettingsForm = (props) => {
                             color="primary"
                         />
                     }
-                    label="Enable sorting animation (⚠️Experimental)"
+                    label="Enable sorting animation for deck"
                 />
                 <FormControlLabel
                     control={

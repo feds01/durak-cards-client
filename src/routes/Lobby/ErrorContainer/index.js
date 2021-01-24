@@ -19,7 +19,7 @@ class ErrorContainer extends React.Component {
     handleErrorEvent(event) {
         this.setState({
             hasError: true,
-            errorString: btoa(event.error.stack)
+            errorString: btoa(event.error.stack ? event.error.stack : event),
         });
     }
 
@@ -33,7 +33,7 @@ class ErrorContainer extends React.Component {
 
     componentDidCatch(error, errorInfo) {
         this.setState({
-            errorString: btoa(error.stack)
+            errorString: btoa(error.stack ? error.stack : error),
         });
     }
 
