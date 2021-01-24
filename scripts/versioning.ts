@@ -1,3 +1,4 @@
+require("dotenv");
 const childProcess = require("child_process");
 const fs = require("fs");
 
@@ -49,8 +50,10 @@ async function exec(command: string): Promise<string> {
  */
 async function main() {
     await clearEnv();
-    await writeToEnv("REACT_APP_NAME", "$npm_package_name");
-    await writeToEnv("REACT_APP_VERSION", "$npm_package_version");
+
+    // TODO: use actual env values
+    await writeToEnv("REACT_APP_NAME", "Durachok");
+    await writeToEnv("REACT_APP_VERSION", "0.1.0");
 
     await exec("git rev-parse --abbrev-ref HEAD").then((stdout) =>
         writeToEnv("REACT_APP_VERSION_BRANCH", stdout)
