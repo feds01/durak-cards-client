@@ -17,6 +17,7 @@ class WaitingRoom extends Component {
         super(props);
 
         this.onKick = this.onKick.bind(this);
+        this.startGame = this.startGame.bind(this);
     }
 
 
@@ -28,6 +29,12 @@ class WaitingRoom extends Component {
      * */
     onKick(id) {
         this.props.socket.emit(ServerEvents.KICK_PLAYER, {id});
+    }
+
+    startGame() {
+        // emit the 'game_start' event and let all other clients
+        // begin the 'countdown stage.
+        this.props.socket.emit(ServerEvents.START_GAME);
     }
 
 
@@ -59,11 +66,7 @@ class WaitingRoom extends Component {
                                 justifySelf: "end",
                                 height: 40
                             }}
-                            onClick={() => {
-                                // emit the 'game_start' event and let all other clients
-                                // begin the 'countdown stage.
-                                socket.emit(ServerEvents.START_GAME);
-                            }}
+                            onClick={this.startGame}
                             disabled={lobby.players.length < 2}
                             color={'primary'}
                             endIcon={<ArrowForwardIosIcon/>}
@@ -82,7 +85,7 @@ class WaitingRoom extends Component {
                                 name={player.name}
                                 isHost={isHost}
                                 {...(isHost && {
-                                    onKick: () => this.onKick(player.id),
+                                    onKick: () => this.onKick(player._id),
                                 })}
                             />
                         ))
