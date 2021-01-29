@@ -12,36 +12,50 @@ import React, {useEffect, useState} from "react";
 import Divider from "@material-ui/core/Divider";
 
 
-import {hasAuthTokens} from "../../utils/auth";
 import {getUser} from "../../utils/networking";
-import GameDialog from "../../components/CreateGameDialog";
+import {logout, useAuthDispatch, useAuthState} from "../../contexts/auth";
+import PlayerHeader from "../../components/PlayerHeader";
 import GameCard from "../../components/DashboardGameCard";
 import LoadingScreen from "../../components/LoadingScreen";
+import GameDialog from "../../components/CreateGameDialog";
+import PlayerStatistics from "../../components/PlayerStatistics";
 import {RefreshDashboardContext} from "../../contexts/RefreshDashboard";
 
+import {Link} from "react-router-dom";
+import {makeStyles} from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+
+const useStyles = makeStyles((theme) => ({
+    buttons: {
+        '& > *': {
+            margin: theme.spacing(1),
+        },
+    },
+}));
+
 const UserRoute = () => {
+    const classes = useStyles();
     const history = useHistory();
+    const {name} = useAuthState();
+    const dispatch = useAuthDispatch();
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [refreshData, setRefreshData] = useState(false);
     const [userData, setUserData] = useState({});
 
-    // check if the client has JWT auth tokens that represent
-    // a registered user, if they do not, the method will re-direct
-    // the client to the login page.
+    const handleLogout = () => {
+        logout(dispatch).then(r => {
+            history.push('/'); //navigate to logout page on logout
+        }); //call the logout action
+    }
+
     useEffect(() => {
         // if either the token or refreshToken is null, re-direct the user to the login page.
-        if (!hasAuthTokens()) {
-            history.push("/login");
-        } else {
-            getUser().then((res) => {
-                if (res.status) {
-                    setUserData(res.data);
-                } else {
-                    history.push("/login");
-                }
-            });
-        }
+        getUser().then((res) => {
+            if (res.status) {
+                setUserData(res.data);
+            }
+        });
     }, [refreshData, history]);
 
 
@@ -56,28 +70,50 @@ const UserRoute = () => {
                 }
             }}>
                 <div className={styles.Dashboard}>
-                    <h1>{userData.name}</h1>
-                    <Divider/>
-
                     <div className={styles.Actions}>
-                        <button onClick={() => setDialogOpen(true)}>
-                            Create game
-                        </button>
+                        <div className={classes.buttons}>
+                            <Button variant="contained" onClick={() => setDialogOpen(true)}>
+                                Create game
+                            </Button>
+                        </div>
+
+                        <div className={classes.buttons}>
+                            <Link to={"/user/settings"}>
+                                <Button variant="contained" style={{
+                                    textDecoration: "none"
+                                }}>
+                                    Settings
+                                </Button>
+                            </Link>
+                            <Button variant="contained" onClick={handleLogout}>
+                                Logout
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className={styles.Games}>
-                        <h2>Active games</h2>
-                        {
-                            userData.games.map((game, index) => {
-                                return <GameCard key={index} {...game} />
-                            })
-                        }
-                        {userData.games.length === 0 && (
-                            <p>No active games.</p>
-                        )}
+                    <PlayerHeader name={name}/>
+
+                    <div className={styles.Content}>
+                        <Divider style={{width: "100%"}}/>
+                        <div className={styles.Statistics}>
+                            <PlayerStatistics/>
+                        </div>
+                        <Divider style={{width: "100%"}}/>
+
+                        <div className={styles.Games}>
+                            <h2>Active games</h2>
+                            {
+                                userData.games.map((game, index) => {
+                                    return <GameCard key={index} {...game} />
+                                })
+                            }
+                            {userData.games.length === 0 && (
+                                <p>No active games.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
-                <GameDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+                <GameDialog open={dialogOpen} onClose={() => setDialogOpen(false)}/>
             </RefreshDashboardContext.Provider>
         );
     }

@@ -16,34 +16,32 @@
     flex: 0;
     display: flex;
     flex-direction: row;
-    margin: 0.5em 0 1em 0;
-
-    & button {
-      cursor: pointer;
-      width: 100%;
-      height: 120px;
-      background-color: #3f51b5 !important;
-
-      color: white;
-      text-transform: uppercase;
-      font-size: 28px;
-      font-weight: bold;
-
-      border-radius: 12px;
-      border: 2px #3f51b5 solid;
-      outline: none !important;
-    }
+    justify-content: space-between;
+    margin: 0.5em 0;
   }
 
-  & .Games {
-    text-align: left;
-    display: flex;
-    justify-content: flex-start;
-    flex-direction: column;
+  & .Content {
+    padding-top: 1em;
+    margin: 0 auto;
 
-    h2 {
-      margin: 0;
-      font-size: 24px;
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+
+    & .Statistics {
+      width: 100%;
+    }
+
+    & .Games {
+      text-align: left;
+      display: flex;
+      justify-content: flex-start;
+      flex-direction: column;
+
+      h2 {
+        margin: 0;
+        font-size: 24px;
+      }
     }
   }
 }

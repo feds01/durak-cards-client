@@ -47,17 +47,17 @@ export async function getUser() {
     }).then((res) => res.json());
 }
 
-export async function login(name, password) {
-    const payload = JSON.stringify({name, password});
-
-    return await fetch(API_ENDPOINT + `/user/login`, {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: payload
-    }).then(res => res.json());
-}
+// export async function login(name, password) {
+//     const payload = JSON.stringify({name, password});
+//
+//     return await fetch(API_ENDPOINT + `/user/login`, {
+//         method: "POST",
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: payload
+//     }).then(res => res.json());
+// }
 
 export async function register(email, name, password, token) {
     const payload = JSON.stringify({email, name, password, token});
