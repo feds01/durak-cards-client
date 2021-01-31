@@ -7,7 +7,7 @@ import PersonIcon from "@material-ui/icons/Person";
 const PlayerHeader = props => {
     return (
         <div className={styles.Container}>
-            <Avatar className={styles.Avatar} alt={props.name}>
+            <Avatar src={props.avatarUri} className={styles.Avatar} alt={props.name}>
                 <PersonIcon fontSize={"large"}/>
             </Avatar>
             <h1>{props.name}</h1>

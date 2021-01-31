@@ -91,7 +91,7 @@ const UserRoute = () => {
                         </div>
                     </div>
 
-                    <PlayerHeader name={name}/>
+                    <PlayerHeader avatarUri={userData.image} name={name}/>
 
                     <div className={styles.Content}>
                         <Divider style={{width: "100%"}}/>

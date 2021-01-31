@@ -3,6 +3,7 @@ import settingStyles from "../index.module.scss";
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import {makeStyles} from "@material-ui/core";
+import {updateUserDetails} from "../../../../utils/networking/user";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -75,6 +76,11 @@ const UploadProfileImage = props => {
     useEffect(() => {
         if (image !== null) {
             setError(""); // reset the error
+            updateUserDetails({image}).then((res) => {
+                if (!res.status) {
+                    setError("Failed to upload profile image.");
+                }
+            });
         }
     }, [image]);
 
@@ -99,8 +105,8 @@ const UploadProfileImage = props => {
             <Divider style={{width: "100%"}}/>
             <p>
                 You can upload a JPG file that will be used a as a profile picture. The maximum file
-                size is
-                1MB.
+                size is 1MB. To get the best profile image fit, try to use an image that has square
+                dimensions.
             </p>
 
             <input

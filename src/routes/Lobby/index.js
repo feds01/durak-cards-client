@@ -52,7 +52,7 @@ class LobbyRoute extends React.Component {
         const pin = this.props.match.params.pin;
 
         const socket = io(SOCKET_ENDPOINT + `/${pin}`, {
-            query: getAuthTokens(),
+            auth: getAuthTokens(),
             transports: ["websocket"]
         });
 
@@ -100,8 +100,7 @@ class LobbyRoute extends React.Component {
                     // the query parameters to reflect the new auth tokens. There should be a better way
                     // of doing this, however it does not seem to be the case.
                     // Check out issue: https://github.com/socketio/socket.io/issues/1677
-                    socket.io.opts.query = getAuthTokens();
-
+                    socket.auth = getAuthTokens();
                     return socket.connect();
                 }
 

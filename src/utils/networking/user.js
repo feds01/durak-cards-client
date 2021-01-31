@@ -38,3 +38,19 @@ export async function deleteUser() {
         headers: {...getAuthHeader()},
     }).then((res) => res.json());
 }
+
+/**
+ *
+ * */
+export async function updateUserDetails(payload) {
+    const body = JSON.stringify(payload);
+
+    return await fetch(API_ENDPOINT + `/user`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader()
+        },
+        body,
+    }).then((res) => res.json());
+}
