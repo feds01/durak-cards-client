@@ -12,14 +12,14 @@ import React, {useEffect, useState} from "react";
 import Divider from "@material-ui/core/Divider";
 
 
-import {getUser} from "../../utils/networking";
-import {logout, useAuthDispatch, useAuthState} from "../../contexts/auth";
+import {getUser} from "../../utils/networking/user";
 import PlayerHeader from "../../components/PlayerHeader";
 import GameCard from "../../components/DashboardGameCard";
 import LoadingScreen from "../../components/LoadingScreen";
 import GameDialog from "../../components/CreateGameDialog";
 import PlayerStatistics from "../../components/PlayerStatistics";
 import {RefreshDashboardContext} from "../../contexts/RefreshDashboard";
+import {logout, useAuthDispatch, useAuthState} from "../../contexts/auth";
 
 import {Link} from "react-router-dom";
 import {makeStyles} from "@material-ui/core";
@@ -51,12 +51,12 @@ const UserRoute = () => {
 
     useEffect(() => {
         // if either the token or refreshToken is null, re-direct the user to the login page.
-        getUser().then((res) => {
+        getUser(dispatch).then((res) => {
             if (res.status) {
                 setUserData(res.data);
             }
         });
-    }, [refreshData, history]);
+    }, [refreshData, dispatch, history]);
 
 
     if (Object.keys(userData).length === 0) {

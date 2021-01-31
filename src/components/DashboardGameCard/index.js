@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 import styles from "./index.module.scss";
 import {useHistory} from "react-router";
 import Button from "@material-ui/core/Button";
-import {deleteGame} from "../../utils/networking";
+import {deleteGame} from "../../utils/networking/lobby";
 import {RefreshDashboardContext} from "../../contexts/RefreshDashboard";
 
 const GameCard = (props) => {

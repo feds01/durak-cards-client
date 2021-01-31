@@ -16,19 +16,20 @@ import Loader from "react-loader-spinner";
 import Button from "@material-ui/core/Button";
 import ReCaptcha from "react-google-recaptcha";
 
-import Input from "../../components/Input";
-import {register} from "../../utils/networking";
-import {updateTokens} from "../../utils/auth";
 import Logo from "../../components/Logo";
+import Input from "../../components/Input";
 import RegisterSchema from "../../schemas/register";
+import {useAuthDispatch} from "../../contexts/auth";
+import {registerUser} from "../../contexts/auth/actions";
 
 const RegisterRoute = () => {
     const history = useHistory();
+    const dispatch = useAuthDispatch();
 
     async function onSubmit(values, {setSubmitting, setErrors}) {
         // make a request to the API to check if there is a game with the given pin,
         // and if so we'll set the next stage of the prompt (enter the pin).
-        const res = await register(values.email, values.name, values.password, values.token);
+        const res = await registerUser(dispatch, {values});
 
         if (!res.status) {
             // The server provides us with a map of errors based on the registration request.
@@ -36,8 +37,6 @@ const RegisterRoute = () => {
             setSubmitting(false);
         } else {
             // set the tokens for this client from the login response object
-            updateTokens(res.token, res.refreshToken);
-
             history.push("/user")
         }
     }

@@ -1,10 +1,11 @@
 import React from 'react';
+import * as Yup from "yup";
 import {Form, Formik} from "formik";
 import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
-import {checkName} from "../../utils/networking";
+
 import Input from "../Input";
-import * as Yup from "yup";
+import {checkName} from "../../utils/networking/lobby";
 
 
 const NameSchema = Yup.object().shape({

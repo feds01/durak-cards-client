@@ -7,8 +7,8 @@ import './index.scss';
 import GamePin from "./GamePin";
 import GameName from "./GameName";
 import GamePassphrase from "./GamePassphrase";
-import {clearTokens, hasAuthTokens, updateTokens} from "../../utils/auth";
-import {getLobby, joinLobby} from "../../utils/networking";
+import {getLobby, joinLobby} from "../../utils/networking/lobby";
+import {useAuthDispatch, useAuthState} from "../../contexts/auth";
 
 
 class Prompt extends React.Component {
@@ -37,7 +37,7 @@ class Prompt extends React.Component {
             // and move onto the name stage.
             await getLobby(this.props.pin).then((res) => {
                 if (res.status) {
-                    if (hasAuthTokens()) {
+                    if (this.props.auth.name) {
                         if (!res.data.with2FA) {
                             this.onSubmit();
                         } else {
@@ -84,7 +84,7 @@ class Prompt extends React.Component {
 
             // update our local storage with the tokens
             if (res.token && res.refreshToken) {
-                updateTokens(res.token, res.refreshToken);
+                this.props.authDispatch({type: "UPDATE_TOKEN", ...res});
             }
 
             this.props.history.push(`/lobby/${pin}`);
@@ -96,7 +96,11 @@ class Prompt extends React.Component {
             // Attempt to join without tokens since they might be anonymous user tokens
             // for a different game. Try and clear the token, then ask the user to join
             // with a name...
-            clearTokens();
+
+            if (!this.props.auth.name) {
+                this.props.authDispatch({type: "UPDATE_TOKEN", ...res});
+            }
+
             this.setState({pin: pin, stage: 'name'});
         }
     }
@@ -127,7 +131,7 @@ class Prompt extends React.Component {
 
                         // if the user is logged in with some account, attempt to authenticate them
                         // by using their credentials
-                        if (hasAuthTokens()) {
+                        if (this.props.auth.name) {
                             if (!with2FA) {
                                 await this.onSubmit();
                             } else {
@@ -174,4 +178,9 @@ class Prompt extends React.Component {
 }
 
 
-export default withRouter(React.forwardRef((props, ref) => <Prompt innerRef={ref} {...props}/>));
+export default withRouter(React.forwardRef((props, ref) => {
+    const auth = useAuthState();
+    const authDispatch = useAuthDispatch();
+
+    return (<Prompt innerRef={ref} auth={auth} authDispatch={authDispatch} {...props}/>);
+}));

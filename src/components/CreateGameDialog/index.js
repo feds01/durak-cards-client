@@ -9,8 +9,8 @@ import Divider from "@material-ui/core/Divider";
 import Typography from "@material-ui/core/Typography";
 
 import MaterialSlider from "../MaterialSlider";
-import {createGame} from "../../utils/networking";
 import Checkbox from "@material-ui/core/Checkbox";
+import {createGame} from "../../utils/networking/lobby";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 const defaultGameParameters = {

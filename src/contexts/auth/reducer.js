@@ -18,16 +18,26 @@ export function init() {
 export const reducer = (initialState, action) => {
     switch (action.type) {
         case "REQUEST_LOGIN":
+        case "REQUEST_REGISTER":
             return {
                 ...initialState,
                 loading: true
             };
         case "LOGIN_SUCCESS":
+        case "REGISTER_SUCCESS":
             return {
                 ...initialState,
                 ...action.payload,
                 loading: false
             };
+
+        case "UPDATE_TOKEN": {
+            return {
+                ...initialState,
+                token: action.token,
+                refreshToken: action.refreshToken
+            }
+        }
         case "LOGOUT":
             return {
                 ...initialState,

@@ -16,9 +16,10 @@ import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
 import {SOCKET_ENDPOINT} from "../../config";
 import ErrorContainer from "./ErrorContainer";
+import {getAuthTokens} from "../../utils/auth";
 import LoadingScreen from "../../components/LoadingScreen";
+import {useAuthDispatch, useAuthState} from "../../contexts/auth";
 import {ClientEvents, error, GameStatus, ServerEvents} from "shared";
-import {clearTokens, getAuthTokens, updateTokens} from "../../utils/auth";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -69,8 +70,8 @@ class LobbyRoute extends React.Component {
             this.setState({shouldBlockNavigation: false});
 
             // clear our token if the user says it's stale...
-            if (event.token === "stale") {
-                clearTokens();
+            if (event.token === "stale" && !this.props.auth.name) {
+                this.props.authDispatch({type: "LOGOUT"});
             }
 
             this.props.history.push("/");
@@ -93,7 +94,7 @@ class LobbyRoute extends React.Component {
                     socket.close();
 
                     // Update our session with the new tokens and the socket query
-                    updateTokens(err.data.token, err.data.refreshToken);
+                    this.props.authDispatch({type: "UPDATE_TOKEN", ...err.data});
 
                     // @Hack: we're manually digging into the query object of the socket and changing
                     // the query parameters to reflect the new auth tokens. There should be a better way
@@ -110,8 +111,8 @@ class LobbyRoute extends React.Component {
                 if (err.message === error.NON_EXISTENT_LOBBY) {
                     this.props.history.push("/");
                 } else if (err.message === error.AUTHENTICATION_FAILED) {
-                    if (err?.data?.token === "stale") {
-                        clearTokens();
+                    if (err?.data?.token === "stale" && !this.props.auth.name) {
+                        this.props.authDispatch({type: "LOGOUT"});
                     }
 
                     this.props.history.push({
@@ -221,4 +222,9 @@ class LobbyRoute extends React.Component {
     }
 }
 
-export default withRouter(LobbyRoute);
+export default withRouter(React.forwardRef((props, ref) => {
+    const auth = useAuthState();
+    const authDispatch = useAuthDispatch();
+
+    return (<LobbyRoute innerRef={ref} auth={auth} authDispatch={authDispatch} {...props}/>);
+}));

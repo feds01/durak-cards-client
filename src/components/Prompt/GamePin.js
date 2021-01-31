@@ -6,7 +6,7 @@ import Loader from 'react-loader-spinner';
 import Button from "@material-ui/core/Button";
 
 import Input from "../Input";
-import {getLobby} from "../../utils/networking";
+import {getLobby} from "../../utils/networking/lobby";
 
 const PinSchema = Yup.object().shape({
     pin: Yup.string().matches(/^\d{6}$/g, "Game PIN is 6 digits long."),
