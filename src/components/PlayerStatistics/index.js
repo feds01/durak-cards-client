@@ -21,18 +21,19 @@ Statistic.propTypes = {
 const PlayerStatistics = props => {
     return (
         <div className={styles.Grid}>
-            <Statistic value={21} name={"Games Played"}/>
-            <Statistic value={16} name={"Games Hosted"}/>
-            <Statistic value={0} name={"Games Resigned"}/>
-            <Statistic value={14} name={"Average Rounds"}/>
-            <Statistic value={10} name={"Games Won"}/>
-            <Statistic value={2} name={"Games Lost"}/>
+            {
+                props.statistics && Object.keys(props.statistics).map((entry) => {
+                    const statistic = props.statistics[entry];
+
+                    return <Statistic {...statistic}/>
+                })
+            }
         </div>
     );
 };
 
 PlayerStatistics.propTypes = {
-
+    statistics: PropTypes.object.isRequired,
 };
 
 export default PlayerStatistics;

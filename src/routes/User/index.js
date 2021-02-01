@@ -96,7 +96,7 @@ const UserRoute = () => {
                     <div className={styles.Content}>
                         <Divider style={{width: "100%"}}/>
                         <div className={styles.Statistics}>
-                            <PlayerStatistics/>
+                            <PlayerStatistics statistics={userData.statistics}/>
                         </div>
                         <Divider style={{width: "100%"}}/>
 
