@@ -25,7 +25,7 @@ const PlayerStatistics = props => {
                 props.statistics && Object.keys(props.statistics).map((entry) => {
                     const statistic = props.statistics[entry];
 
-                    return <Statistic {...statistic}/>
+                    return <Statistic key={statistic.name} {...statistic}/>
                 })
             }
         </div>
