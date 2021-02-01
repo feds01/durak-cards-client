@@ -29,7 +29,7 @@ const RegisterRoute = () => {
     async function onSubmit(values, {setSubmitting, setErrors}) {
         // make a request to the API to check if there is a game with the given pin,
         // and if so we'll set the next stage of the prompt (enter the pin).
-        const res = await registerUser(dispatch, {values});
+        const res = await registerUser(dispatch, values);
 
         if (!res.status) {
             // The server provides us with a map of errors based on the registration request.

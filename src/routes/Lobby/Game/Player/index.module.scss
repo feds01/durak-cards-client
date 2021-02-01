@@ -23,14 +23,17 @@
 
     &.Starting {
       border: 2px red solid;
+      background: red;
     }
 
     &.Turned {
       border: 2px green solid;
+      background: green;
     }
 
     &.Out {
       border: 2px gold solid;
+      background: gold;
     }
 
     &.Clickable {

@@ -54,6 +54,8 @@ const UserRoute = () => {
         getUser(dispatch).then((res) => {
             if (res.status) {
                 setUserData(res.data);
+            } else {
+                handleLogout();
             }
         });
     }, [refreshData, dispatch, history]);

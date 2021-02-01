@@ -52,6 +52,7 @@ const Player = props => {
             >
                 <Avatar
                     alt={props.name}
+                    {...!props.avatarUri && {style: {background: "#1a1d3d"}}}
                     {...props.avatarUri && {src: props.avatarUri}}
                     className={clsx(styles.Avatar, {
                         [styles.Starting]: props.beganRound && !props.turned,
@@ -60,7 +61,7 @@ const Player = props => {
                         [styles.Clickable]: typeof props.onClick !== 'undefined',
                     })}
                 >
-                    <PersonIcon/>
+                    {!props.avatarUri && <PersonIcon/>}
                 </Avatar>
             </StatusBadge>
             <span className={styles.Text}>{props.name} {!props.out && (`- ${Array.isArray(props.deck) ? props.deck.length : props.deck}`)}</span>
