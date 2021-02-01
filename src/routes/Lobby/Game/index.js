@@ -525,6 +525,7 @@ class Game extends React.Component {
                     )}
                     {showVictory && (
                         <VictoryDialog
+                            images={Object.fromEntries(this.props.lobby.players.map((entry) => ([entry.name, entry.image])))}
                             socket={socket}
                             name={lobby.name}
                             players={playerOrder}

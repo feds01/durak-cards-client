@@ -82,8 +82,9 @@ const VictoryDialog = props => {
             <div className={styles.Dialog}>
                 <h2>{title}</h2>
                 <Avatar
-                    alt={props.players[0].name}
                     className={styles.Avatar}
+                    alt={props.players[0].name}
+                    {...props.images[props.players[0].name] && {src: props.images[props.players[0].name] }}
                 >
                     <PersonIcon/>
                 </Avatar>
@@ -129,6 +130,7 @@ const VictoryDialog = props => {
 
 VictoryDialog.propTypes = {
     socket: PropTypes.object,
+    images: PropTypes.object.isRequired,
     players: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
