@@ -30,7 +30,12 @@ export const reducer = (initialState, action) => {
                 ...action.payload,
                 loading: false
             };
-
+        case "UPDATE_CREDENTIALS": {
+            return {
+                ...initialState,
+                ...action.payload,
+            }
+        }
         case "UPDATE_TOKEN": {
             // update the local storage with them...
             localStorage.setItem("token", action.token);

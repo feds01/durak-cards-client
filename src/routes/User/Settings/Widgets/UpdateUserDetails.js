@@ -1,7 +1,7 @@
-import {Form, Formik} from "formik";
-import React, {useState} from 'react';
+import {Form, Formik, yupToFormErrors} from "formik";
+import React, {useEffect, useState} from 'react';
 import settingStyles from "../index.module.scss";
-import {useAuthState} from "../../../../contexts/auth";
+import {useAuthDispatch, useAuthState} from "../../../../contexts/auth";
 import UserDetailsSchema from "../../../../schemas/register";
 
 
@@ -13,6 +13,7 @@ import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/Visibility";
 import withStyles from "@material-ui/core/styles/withStyles";
 import InputAdornment from "@material-ui/core/InputAdornment";
+import {updateUserDetails} from "../../../../utils/networking/user";
 
 const SettingField = withStyles({
     root: {
@@ -44,15 +45,53 @@ const SettingField = withStyles({
 
 const UpdateUserDetails = () => {
     const {name, email} = useAuthState();
+    const authDispatch = useAuthDispatch();
+    const [submitText, setSubmitText] = useState("update");
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        let timeout;
+
+        if (submitText !== "update") {
+            // queue a 2 second function to reset the status to an empty string
+            timeout = setTimeout(() => {setSubmitText("update")}, 2000);
+        }
+
+        return () => {
+            if (timeout) clearTimeout(timeout);
+        }
+    }, [submitText ]);
+
+    async function submit(values, actions) {
+        updateUserDetails(values).then((res) => {
+            if (!res.status) {
+                actions.setErrors(res.errors);
+            } else {
+                // we need to update our internal information for auth...
+                authDispatch({type: "UPDATE_CREDENTIALS", payload: res.credentials});
+
+
+                setSubmitText("updated!");
+            }
+        });
+    }
+
+    useEffect(() => {
+
+    }, []);
 
     return (
         <Formik
             initialValues={{name, email, password: ""}}
-            validationSchema={UserDetailsSchema}
-            onSubmit={(values) => {
-                console.log(values)
-            }}>
+            validate={(values) => {
+                return UserDetailsSchema
+                    .validate(values, { abortEarly: false, context: {strict: false} })
+                    .then(() => {})
+                    .catch(err => {
+                        return yupToFormErrors(err);
+                    });
+            }}
+            onSubmit={submit}>
             {(props => {
                 const {values, handleChange, handleBlur, errors} = props;
 
@@ -115,8 +154,8 @@ const UpdateUserDetails = () => {
                                 helperText={errors.password ?? "Update your password"}
                                 value={values.password}
                             />
-                            <Button variant={"contained"}>
-                                Update
+                            <Button variant={"contained"} type={"submit"}>
+                                {submitText}
                             </Button>
                         </section>
                     </Form>
