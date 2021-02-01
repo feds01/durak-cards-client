@@ -108,18 +108,32 @@ export function generateSortMoves(cards, sortBySuit = false) {
         const first = diff.findIndex(item => item !== 0);
 
         // record this as a step
-        moves.push({item: first, steps: diff[first]});
+        let firstCard = original[first].card;
+        moves.push({item: firstCard, steps: diff[first]});
 
         let temp = {...original[first]}
         original[first] = {...original[first + diff[first]]};
         original[first + diff[first]] = temp;
 
         // we also need to add a move for the shift
-        moves.push({item: first + diff[first] - 1, steps: -(diff[first] - 1)})
+        moves.push({item: original[first].card, steps: -(diff[first] - 1)})
 
 
         // re-compute the diff for the new array
         diff = original.map((item, index) => ref.findIndex((x) => x.card === item.card) - index);
+    }
+
+    // pass this through an optimiser to prevent unnecessary generated moves from occurring
+    for (let i = 0; i < moves.length - 1; i++) {
+        if (moves[i].item === moves[i + 1].item) {
+            moves[i].steps = moves[i].steps + moves[i + 1].steps;
+            moves.splice(i + 1, 1);
+        }
+
+        // if two moves cancel each other out, just remove it
+        if (moves[i].steps === 0) {
+            moves.splice(i, 1);
+        }
     }
 
     return moves;

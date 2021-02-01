@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import settingStyles from "../index.module.scss";
 import Divider from "@material-ui/core/Divider";
 import Button from "@material-ui/core/Button";
 import {makeStyles} from "@material-ui/core";
 import {updateUserDetails} from "../../../../utils/networking/user";
+import {RefreshDashboardContext} from "../../../../contexts/RefreshDashboard";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -73,12 +74,16 @@ const UploadProfileImage = props => {
     const [image, setImage] = useState(null);
     const [error, setError] = useState("");
 
+    const refresher = useContext(RefreshDashboardContext);
+
     useEffect(() => {
         if (image !== null) {
             setError(""); // reset the error
             updateUserDetails({image}).then((res) => {
                 if (!res.status) {
                     setError("Failed to upload profile image.");
+                } else {
+                    refresher.onRefresh();
                 }
             });
         }

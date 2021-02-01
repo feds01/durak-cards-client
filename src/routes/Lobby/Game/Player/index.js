@@ -52,6 +52,7 @@ const Player = props => {
             >
                 <Avatar
                     alt={props.name}
+                    {...props.avatarUri && {src: props.avatarUri}}
                     className={clsx(styles.Avatar, {
                         [styles.Starting]: props.beganRound && !props.turned,
                         [styles.Turned]: props.turned && !props.out,
@@ -68,6 +69,7 @@ const Player = props => {
 };
 
 Player.propTypes = {
+    avatarUri: PropTypes.string,
     name: PropTypes.string.isRequired,
     deck: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.string), PropTypes.number]).isRequired,
     onClick: PropTypes.func,

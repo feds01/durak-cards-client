@@ -32,6 +32,10 @@ export const reducer = (initialState, action) => {
             };
 
         case "UPDATE_TOKEN": {
+            // update the local storage with them...
+            localStorage.setItem("token", action.token);
+            localStorage.setItem("refreshToken", action.refreshToken);
+
             return {
                 ...initialState,
                 token: action.token,

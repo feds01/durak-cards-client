@@ -216,12 +216,13 @@ class Game extends React.Component {
         if (!dragApi) throw new Error("Uninitialised Drag API");
 
         for (let move of moves) {
-            let item = move.item
-            let steps = move.steps;
+            let {item, steps} = move;
 
             dragApi.tryReleaseLock();
-            const preDrag = dragApi.tryGetLock(`card-${item}`, () => {
-            });
+
+            // @@Note: Interesting bug here, if the item doesn't change between current move and previous
+            //         move, the lock fails to acquire. I don't understand why this would be an issue...
+            const preDrag = dragApi.tryGetLock(item, () => {});
 
             // We fail to acquire lock, but that's ok since it's likely that the user is
             // spamming the sorting function.
@@ -505,7 +506,10 @@ class Game extends React.Component {
         if (region === "players-left") playerSection = playerSection.reverse();
 
         return playerSection.map((player, index) => {
-            return <Player {...player} {...(out && !player.out) && {onClick: this.setSpectator}} key={index}/>
+            const avatarUri = this.props.lobby.players.find((p) => p.name === player.name)?.image;
+
+            return <Player {...avatarUri && {avatarUri}} {...player} {...(out && !player.out) && {onClick: this.setSpectator}}
+                           key={index}/>
         });
     }
 

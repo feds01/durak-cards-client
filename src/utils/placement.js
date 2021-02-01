@@ -32,7 +32,11 @@ export function canPlace(cards, tableTop, isDefending, canAttack, trumpSuit, pla
         if (!isDefending) {
             if (!canAttack) return false; // if they can't attack, they can't place any cards yet!
 
-            return allNumerics.size === 0 || allNumerics.has(parseCard(card.value).value);
+            const freeSpaces = tableTop.reduce((acc, value) => {
+                return value.length === 0 ? acc + 1 : acc;
+            }, 0);
+
+            return  freeSpaces > 0 && (allNumerics.size === 0 || allNumerics.has(parseCard(card.value).value));
         } else {
             // This is somewhat inefficient, we could be using 'allNumerics' here somehow.
             return a.map(idx => idx).some((idx) => canPlaceCard(card.value, idx, tableTop, isDefending, trumpSuit.suit, playerRef));

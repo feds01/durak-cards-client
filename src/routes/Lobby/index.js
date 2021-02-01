@@ -16,9 +16,8 @@ import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
 import {SOCKET_ENDPOINT} from "../../config";
 import ErrorContainer from "./ErrorContainer";
-import {getAuthTokens} from "../../utils/auth";
 import LoadingScreen from "../../components/LoadingScreen";
-import {useAuthDispatch, useAuthState} from "../../contexts/auth";
+import {logout, useAuthDispatch, useAuthState} from "../../contexts/auth";
 import {ClientEvents, error, GameStatus, ServerEvents} from "shared";
 
 class LobbyRoute extends React.Component {
@@ -52,7 +51,10 @@ class LobbyRoute extends React.Component {
         const pin = this.props.match.params.pin;
 
         const socket = io(SOCKET_ENDPOINT + `/${pin}`, {
-            auth: getAuthTokens(),
+            auth: {
+                token: this.props.auth.token,
+                refreshToken: this.props.auth.refreshToken,
+            },
             transports: ["websocket"]
         });
 
@@ -64,20 +66,20 @@ class LobbyRoute extends React.Component {
 
         // The server disconnected us for some reason... re-direct back to home page and
         // clear the session so the user isn't using stale JWTs
-        socket.on(ClientEvents.CLOSE, (event) => {
+        socket.on(ClientEvents.CLOSE, async (event) => {
             // disable the 'navigation prompt' from alerting the user
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
 
             // clear our token if the user says it's stale...
-            if (event.token === "stale" && !this.props.auth.name) {
-                this.props.authDispatch({type: "LOGOUT"});
+            if (!this.props.auth.name) {
+                await logout(this.props.authDispatch);
             }
 
             this.props.history.push("/");
         });
 
-        socket.on("connect_error", err => {
+        socket.on("connect_error", async (err) => {
             // disable the 'navigation prompt' from alerting the user
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
@@ -100,7 +102,10 @@ class LobbyRoute extends React.Component {
                     // the query parameters to reflect the new auth tokens. There should be a better way
                     // of doing this, however it does not seem to be the case.
                     // Check out issue: https://github.com/socketio/socket.io/issues/1677
-                    socket.auth = getAuthTokens();
+                    socket.auth = {
+                        token: this.props.auth.token,
+                        refreshToken: this.props.auth.refreshToken,
+                    }
                     return socket.connect();
                 }
 
@@ -110,8 +115,8 @@ class LobbyRoute extends React.Component {
                 if (err.message === error.NON_EXISTENT_LOBBY) {
                     this.props.history.push("/");
                 } else if (err.message === error.AUTHENTICATION_FAILED) {
-                    if (err?.data?.token === "stale" && !this.props.auth.name) {
-                        this.props.authDispatch({type: "LOGOUT"});
+                    if (!this.props.auth.name) {
+                        await logout(this.props.authDispatch);
                     }
 
                     this.props.history.push({

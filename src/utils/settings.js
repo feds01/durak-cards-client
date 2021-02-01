@@ -13,7 +13,7 @@ export function getSetting(name) {
         if (Object.keys(settings).includes(name)) {
             return settings[name];
         } else {
-            return null;
+            return defaultSettings[name] || null;
         }
 
     } catch (e) {
