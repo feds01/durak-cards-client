@@ -16,11 +16,10 @@ import CountDown from "./CountDown";
 import WaitingRoom from "./WaitingRoom";
 import {SOCKET_ENDPOINT} from "../../config";
 import ErrorContainer from "./ErrorContainer";
-import LoadingScreen from "../../components/LoadingScreen";
-import {logout, useAuthDispatch, useAuthState} from "../../contexts/auth";
-import {ClientEvents, error, GameStatus, ServerEvents} from "shared";
 import {ChatProvider} from "../../contexts/chat";
-import {DragDropContext} from "react-beautiful-dnd";
+import LoadingScreen from "../../components/LoadingScreen";
+import {ClientEvents, error, GameStatus, ServerEvents} from "shared";
+import {logout, useAuthDispatch, useAuthState} from "../../contexts/auth";
 
 class LobbyRoute extends React.Component {
     constructor(props) {
@@ -216,7 +215,7 @@ class LobbyRoute extends React.Component {
                         {stage === GameStatus.STARTED && <CountDown/>}
                         {stage === GameStatus.PLAYING && (
                             <ErrorContainer>
-                                <ChatProvider>
+                                <ChatProvider chat={this.state.lobby.chat}>
                                     <Game {...this.state} />
                                 </ChatProvider>
                             </ErrorContainer>

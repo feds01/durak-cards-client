@@ -1,34 +1,31 @@
 export const initialState = {
     messages: [],
     opened: false,
-    socket: null,
     disabled: false,
     unreadCount: 0,
 };
 
-export function init() {
-    return initialState;
+export function init(messages) {
+    return {...initialState, messages};
 }
 
 export const reducer = (initialState, action) => {
     switch (action.type) {
-        case "SET_SOCKET": {
+        case "PUT_MESSAGE": {
             return {
                 ...initialState,
-                socket: action.socket,
-            }
-        }
-        case "SEND_MESSAGE": {
-            return initialState;
-        }
-        case "PUT_MESSAGE": {
-            return initialState;
+                messages: [...initialState.messages, action.message],
+                unreadCount: initialState.opened ? initialState.unreadCount : initialState.unreadCount + 1,
+            };
         }
         case "TOGGLE_CHAT": {
             return {
                 ...initialState,
                 opened: !initialState.opened,
             }
+        }
+        default: {
+            throw new Error(`Unhandled action type: ${action.type}`);
         }
     }
 };

@@ -1,10 +1,10 @@
 // Context/context.js
 
 import React, {useReducer} from "react";
-import {init, initialState, reducer} from "./reducer";
+import {init, reducer} from "./reducer";
 
-export const ChatStateContext = React.createContext();
-export const ChatDispatchContext = React.createContext();
+export const ChatStateContext = React.createContext(null);
+export const ChatDispatchContext = React.createContext(null);
 
 
 export function useChatState() {
@@ -27,11 +27,11 @@ export function useChatDispatch() {
     return context;
 }
 
-export const ChatProvider = ({ children }) => {
-    const [chat, dispatch] = useReducer(reducer, initialState, init);
+export const ChatProvider = ({chat, children }) => {
+    const [messages, dispatch] = useReducer(reducer, chat, init);
 
     return (
-        <ChatStateContext.Provider value={chat}>
+        <ChatStateContext.Provider value={messages}>
             <ChatDispatchContext.Provider value={dispatch}>
                 {children}
             </ChatDispatchContext.Provider>

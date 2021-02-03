@@ -8,7 +8,7 @@
 
 import styles from "./index.module.scss";
 import {useHistory} from "react-router";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import Divider from "@material-ui/core/Divider";
 
 
@@ -43,11 +43,11 @@ const UserRoute = () => {
     const [refreshData, setRefreshData] = useState(false);
     const [userData, setUserData] = useState({});
 
-    const handleLogout = () => {
+    const handleLogout = useCallback(() => {
         logout(dispatch).then(r => {
             history.push('/'); //navigate to logout page on logout
         }); //call the logout action
-    }
+    }, [history, dispatch]);
 
     useEffect(() => {
         // if either the token or refreshToken is null, re-direct the user to the login page.
@@ -58,7 +58,7 @@ const UserRoute = () => {
                 handleLogout();
             }
         });
-    }, [refreshData, dispatch, history]);
+    }, [refreshData, handleLogout, dispatch]);
 
 
     if (Object.keys(userData).length === 0) {

@@ -17,7 +17,7 @@ import Announcement from "./Announcement";
 import PlayerActions from "./PlayerActions";
 import {GameContext} from "./GameContext";
 import {delay} from "../../../utils/delay";
-import {ChatProvider, useChatState} from "../../../contexts/chat";
+import {useChatState} from "../../../contexts/chat";
 import {move, reorder} from "../../../utils/movement";
 import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
@@ -473,7 +473,7 @@ class Game extends React.Component {
         }
 
         // setup key listener for shortcuts.
-        window.addEventListener("keydown", this.keyListener);
+        window.addEventListener("keydown", this.keyListener, false);
 
         // Common event for processing any player actions taken...e
         // should be transferred on the 'started_game' event.
@@ -603,7 +603,7 @@ class Game extends React.Component {
                                         canForfeit={this.canForfeit() && !isDragging}
                                         setCards={this.setCards}/>
                                 </div>
-                                <Chat/>
+                                <Chat socket={socket}/>
                             </div>
                             <CardHolder/>
                         </div>

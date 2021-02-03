@@ -36,7 +36,7 @@ const PlayerActions = props => {
 
     useEffect(() => {
         setAllowedToSkip(!turned);
-    }, [props.canForfeit]);
+    }, [props.canForfeit, turned]);
 
 
     function sendForfeit() {
