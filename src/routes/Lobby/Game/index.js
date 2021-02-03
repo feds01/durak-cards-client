@@ -5,7 +5,9 @@ import useSound from "use-sound";
 import debounce from "lodash.debounce";
 import styles from "./index.module.scss";
 import {DragDropContext} from "react-beautiful-dnd";
+import withStyles from "@material-ui/core/styles/withStyles";
 
+import Chat from "./Chat";
 import Table from "./Table";
 import Player from "./Player";
 import Header from "./Header";
@@ -15,6 +17,7 @@ import Announcement from "./Announcement";
 import PlayerActions from "./PlayerActions";
 import {GameContext} from "./GameContext";
 import {delay} from "../../../utils/delay";
+import {ChatProvider, useChatState} from "../../../contexts/chat";
 import {move, reorder} from "../../../utils/movement";
 import {canPlaceCard} from "../../../utils/placement";
 import {arraysEqual, deepEqual} from "../../../utils/equal";
@@ -31,6 +34,35 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // number of opponents in the game. The player avatars will be added depending
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
+
+const drawerWidth = 300;
+const chatDrawerStyles = theme => ({
+    root: {
+        height: "100vh",
+        display: 'flex',
+        flexDirection: 'column',
+    },
+
+    tableRoot: {
+        flex: "1",
+        display: 'flex',
+    },
+
+    content: {
+        transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+        }),
+        marginRight: -drawerWidth,
+    },
+    contentShift: {
+        transition: theme.transitions.create('margin', {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+        marginRight: 0,
+    },
+});
 
 
 class Game extends React.Component {
@@ -222,7 +254,8 @@ class Game extends React.Component {
 
             // @@Note: Interesting bug here, if the item doesn't change between current move and previous
             //         move, the lock fails to acquire. I don't understand why this would be an issue...
-            const preDrag = dragApi.tryGetLock(item, () => {});
+            const preDrag = dragApi.tryGetLock(item, () => {
+            });
 
             // We fail to acquire lock, but that's ok since it's likely that the user is
             // spamming the sorting function.
@@ -417,9 +450,8 @@ class Game extends React.Component {
     shouldComponentUpdate(nextProps, nextState, nextContext) {
 
         // if game state changes... we should update
-        if (!deepEqual(this.state.game, nextState.game)) {
-            return true;
-        }
+        if (!deepEqual(this.state.game, nextState.game)) return true;
+        if (!deepEqual(this.props, nextProps)) return true;
 
         // we should also update if any of the following updates... canPlaceMap and showVictory
         // Essentially we are avoiding a re-render on 'isDragging' or changing.
@@ -514,7 +546,7 @@ class Game extends React.Component {
     }
 
     render() {
-        const {socket, lobby} = this.props;
+        const {socket, chat, lobby, classes} = this.props;
         const {isDragging, showAnnouncement, playerOrder, showVictory} = this.state;
 
         return (
@@ -538,35 +570,42 @@ class Game extends React.Component {
                             (api) => this.setState({dragApi: api})
                         ]}
                     >
-                        <div className={styles.GameContainer}>
-                            <Header className={styles.GameHeader} countdown={lobby.roundTimeout}/>
-                            <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
-                                {this.renderPlayerRegion("players-top")}
+                        <div className={classes.root}>
+                            <div className={classes.tableRoot}>
+                                <div className={clsx(styles.GameContainer, classes.content, {
+                                    [classes.contentShift]: chat.opened,
+                                })}>
+                                    <Header className={styles.GameHeader} countdown={lobby.roundTimeout}/>
+                                    <div className={clsx(styles.PlayerArea, styles.PlayerTop)}>
+                                        {this.renderPlayerRegion("players-top")}
+                                    </div>
+                                    <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
+                                        {this.renderPlayerRegion("players-left")}
+                                    </div>
+
+                                    <Table
+                                        className={styles.GameTable}
+                                        placeMap={this.state.canPlaceMap}
+                                    />
+
+                                    <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
+                                        {this.renderPlayerRegion("players-right")}
+                                    </div>
+
+                                    <PlayerActions
+                                        className={styles.GameFooter}
+                                        sortRef={this.sortButtonRef}
+                                        skipRef={this.skipButtonRef}
+
+                                        socket={socket}
+                                        isDragging={isDragging}
+                                        moveCards={this.moveCards}
+                                        canForfeit={this.canForfeit() && !isDragging}
+                                        setCards={this.setCards}/>
+                                </div>
+                                <Chat/>
                             </div>
-                            <div className={clsx(styles.PlayerArea, styles.PlayerLeft)}>
-                                {this.renderPlayerRegion("players-left")}
-                            </div>
-
-                            <Table
-                                className={styles.GameTable}
-                                placeMap={this.state.canPlaceMap}
-                            />
-
-                            <div className={clsx(styles.PlayerArea, styles.PlayerRight)}>
-                                {this.renderPlayerRegion("players-right")}
-                            </div>
-
-                            <CardHolder className={styles.GameFooter}>
-                                <PlayerActions
-                                    sortRef={this.sortButtonRef}
-                                    skipRef={this.skipButtonRef}
-
-                                    socket={socket}
-                                    isDragging={isDragging}
-                                    moveCards={this.moveCards}
-                                    canForfeit={this.canForfeit() && !isDragging}
-                                    setCards={this.setCards}/>
-                            </CardHolder>
+                            <CardHolder/>
                         </div>
                     </DragDropContext>
                 </GameContext.Provider>
@@ -576,20 +615,26 @@ class Game extends React.Component {
 }
 
 Game.propTypes = {
-    socket: PropTypes.object.isRequired,
-    isHost: PropTypes.bool.isRequired,
-    pin: PropTypes.string.isRequired,
-    lobby: PropTypes.object.isRequired,
+    /* Initial game state if such exists */
     game: PropTypes.object,
+
+    /* Sound */
     beginRound: PropTypes.func,
     placeCard: PropTypes.func,
+
+    pin: PropTypes.string.isRequired,
+    lobby: PropTypes.object.isRequired,
+    isHost: PropTypes.bool.isRequired,
+    socket: PropTypes.object.isRequired,
+    chat: PropTypes.object.isRequired,
 };
 
-const WithSound = (props) => {
+const WithContext = (props) => {
+    const chat = useChatState();
     const [beginRound] = useSound(begin, {volume: 0.25});
     const [placeCard] = useSound(place, {volume: 0.25});
 
-    return <Game {...props} beginRound={beginRound} placeCard={placeCard}/>;
+    return <Game {...props} chat={chat} beginRound={beginRound} placeCard={placeCard}/>;
 }
 
-export default WithSound;
+export default withStyles(chatDrawerStyles, {withTheme: true})(WithContext);

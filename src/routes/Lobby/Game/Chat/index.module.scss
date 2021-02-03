@@ -1,0 +1,14 @@
+.Container {
+  text-align: center;
+  color: rgba(172, 170, 190, 1);
+
+  & .Header {
+    height: 72px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Cabin', sans-serif;
+    padding: 0 12px 0 8px;
+  }
+}
