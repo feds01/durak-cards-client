@@ -1,10 +1,11 @@
-import React from 'react';
+import {Virtuoso} from 'react-virtuoso'
 import styles from "./index.module.scss";
+import Button from "@material-ui/core/Button";
+import React, {useEffect, useRef, useState} from 'react';
 import {useChatState} from "../../../../contexts/chat";
+import VerticalAlignBottomIcon from '@material-ui/icons/VerticalAlignBottom';
 
-const Messages = () => {
-    const {messages} = useChatState();
-
+const Message = ({name, message, time}) => {
     function formatTime(time) {
         const seconds = Math.floor((time / 1000) % 60).toString();
         const minutes = Math.floor((time / (1000 * 60)) % 60).toString();
@@ -19,20 +20,71 @@ const Messages = () => {
     }
 
     return (
-        <div className={styles.Messages}>
-            {
-                messages.map((entry, index) => {
-                    return (
-                        <div key={index} className={styles.Message}>
-                            <span>{formatTime(entry.time)}</span>
-                            <p><b>{entry.name}</b>: {entry.message}</p>
-                        </div>
-                    )
-                })
-            }
+        <div className={styles.Message}>
+            <span>{formatTime(time)}</span>
+            <p><b>{name}</b>: {message}</p>
         </div>
-    );
+    )
 };
+
+const Messages = () => {
+    const {messages} = useChatState();
+    const listRef = useRef(null);
+
+    const [atBottom, setAtBottom] = useState(false)
+    const showButtonTimeoutRef = useRef(null)
+    const [showButton, setShowButton] = useState(false)
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(showButtonTimeoutRef.current)
+        }
+
+    }, []);
+
+    useEffect(() => {
+        clearTimeout(showButtonTimeoutRef.current)
+
+        if (!atBottom) {
+            showButtonTimeoutRef.current = setTimeout(() => setShowButton(true), 500)
+        } else {
+            setShowButton(false)
+        }
+    }, [atBottom, setShowButton]);
+
+    return (
+        <>
+            <Virtuoso
+                ref={listRef}
+                className={styles.Messages}
+                initialTopMostItemIndex={messages.length - 1}
+                data={messages}
+                atBottomStateChange={bottom => {
+                    setAtBottom(bottom);
+                }}
+                itemContent={(index, message) => <Message {...message}/>}
+                followOutput={"smooth"}
+            />
+            {showButton && (
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    transform: 'translate(0rem, -2rem)'
+                }}>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<VerticalAlignBottomIcon/>}
+                        onClick={() => listRef.current.scrollToIndex({index: messages.length - 1, behavior: 'smooth'})}
+                    >
+                        Bottom
+                    </Button>
+                </div>
+
+            )}
+        </>
+    );
+}
 
 
 export default Messages;
