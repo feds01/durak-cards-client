@@ -1,20 +1,12 @@
-import React from 'react';
+import {Virtuoso} from 'react-virtuoso'
 import styles from "./index.module.scss";
-import {useChatDispatch, useChatState} from "../../../../contexts/chat";
-import {AutoSizer, CellMeasurer, CellMeasurerCache, List} from "react-virtualized";
+import Button from "@material-ui/core/Button";
+import React, {useEffect, useRef, useState} from 'react';
+import {useChatState} from "../../../../contexts/chat";
+import VerticalAlignBottomIcon from '@material-ui/icons/VerticalAlignBottom';
 
-class Messages extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this._cache = new CellMeasurerCache({defaultHeight: 16, fixedWidth: true});
-        this._listRef = React.createRef();
-
-        this.rowRenderer = this.rowRenderer.bind(this);
-        this.onScroll = this.onScroll.bind(this);
-    }
-
-    static formatTime(time) {
+const Message = ({name, message, time}) => {
+    function formatTime(time) {
         const seconds = Math.floor((time / 1000) % 60).toString();
         const minutes = Math.floor((time / (1000 * 60)) % 60).toString();
         const hours = Math.floor((time / (1000 * 60 * 60)) % 24).toString();
@@ -27,58 +19,72 @@ class Messages extends React.Component {
         return `${minutes.padStart(1, "0")}:` + formattedTime;
     }
 
-    onScroll(props) {
-        console.log(props);
-    }
+    return (
+        <div className={styles.Message}>
+            <span>{formatTime(time)}</span>
+            <p><b>{name}</b>: {message}</p>
+        </div>
+    )
+};
 
-    rowRenderer({parent, index, style, key}) {
-        const {name, time, message} = this.props.messages[index];
-
-        return (
-            <CellMeasurer
-                key={key}
-                cache={this._cache}
-                columnIndex={0}
-                parent={parent}
-                rowIndex={index}
-            >
-                <div style={style} className={styles.Message}>
-                    <span>{Messages.formatTime(time)}</span>
-                    <p><b>{name}</b>: {message}</p>
-                </div>
-            </CellMeasurer>
-        )
-    }
-
-    render() {
-        const {messages} = this.props;
-
-        return (
-            <AutoSizer>
-                {({width, height}) => (
-                    <List
-                        deferredMeasurementCache={this._cache}
-                        ref={this._listRef}
-                        className={styles.Messages}
-                        rowHeight={this._cache.rowHeight}
-                        width={width}
-                        height={height}
-                        rowCount={messages.length}
-                        onScroll={this.onScroll}
-                        scrollToIndex={messages.length - 1}
-                        rowRenderer={this.rowRenderer}
-                    />
-                )}
-            </AutoSizer>
-        );
-    }
-}
-
-const WithChat = (props) => {
+const Messages = () => {
     const {messages} = useChatState();
-    const chatDispatcher = useChatDispatch();
+    const listRef = useRef(null);
 
-    return <Messages {...props} messages={messages} chatDispatcher={chatDispatcher}/>;
+    const [atBottom, setAtBottom] = useState(false)
+    const showButtonTimeoutRef = useRef(null)
+    const [showButton, setShowButton] = useState(false)
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(showButtonTimeoutRef.current)
+        }
+
+    }, []);
+
+    useEffect(() => {
+        clearTimeout(showButtonTimeoutRef.current)
+
+        if (!atBottom) {
+            showButtonTimeoutRef.current = setTimeout(() => setShowButton(true), 500)
+        } else {
+            setShowButton(false)
+        }
+    }, [atBottom, setShowButton]);
+
+    return (
+        <>
+            <Virtuoso
+                ref={listRef}
+                className={styles.Messages}
+                initialTopMostItemIndex={messages.length - 1}
+                data={messages}
+                atBottomStateChange={bottom => {
+                    setAtBottom(bottom);
+                }}
+                itemContent={(index, message) => <Message {...message}/>}
+                followOutput={"smooth"}
+            />
+            {showButton && (
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    transform: 'translate(0rem, -2rem)'
+                }}>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<VerticalAlignBottomIcon/>}
+                        onClick={() => listRef.current.scrollToIndex({index: messages.length - 1, behavior: 'smooth'})}
+                    >
+                        Bottom
+                    </Button>
+                </div>
+
+            )}
+        </>
+    );
 }
 
-export default WithChat;
+
+export default Messages;
