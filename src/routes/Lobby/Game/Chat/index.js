@@ -30,13 +30,15 @@ const useStyles = makeStyles((theme) => ({
 
 const Chat = (props) => {
     const classes = useStyles();
-    const {opened, disabled} = useChatState();
+    const {opened} = useChatState();
     const dispatchChat = useChatDispatch();
 
     useEffect(() => {
         props.socket.on(ClientEvents.MESSAGE, (message) => {
             dispatchChat({type: "PUT_MESSAGE", message});
         });
+
+        // eslint-disable-next-line
     }, []);
 
     return (
@@ -66,11 +68,11 @@ const Chat = (props) => {
                 <Divider/>
                 <div className={styles.Chat}>
                     <div className={styles.ChatBox}>
-                        {disabled ? (
-                            <p>The chat is disabled for this lobby.</p>
-                        ) : (
-                            <p>Welcome to the chat!</p>
-                        )}
+                        {/*{disabled ? (*/}
+                        {/*    <p>The chat is disabled for this lobby.</p>*/}
+                        {/*) : (*/}
+                        {/*    <p>Welcome to the chat!</p>*/}
+                        {/*)}*/}
                         <Messages/>
                     </div>
                     <Divider/>

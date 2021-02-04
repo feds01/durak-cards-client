@@ -34,6 +34,7 @@
     "react-router-dom": "5.2.0",
     "react-scripts": "4.0.1",
     "react-transition-group": "^4.4.1",
+    "react-virtualized": "^9.22.3",
     "shared": "git+https://github.com/feds01/durak-cards-shared#master",
     "socket.io-client": "3.0.4",
     "source-map-explorer": "^2.5.2",
