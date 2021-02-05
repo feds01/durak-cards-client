@@ -21,6 +21,7 @@ export const reducer = (initialState, action) => {
         case "TOGGLE_CHAT": {
             return {
                 ...initialState,
+                unreadCount: !initialState.opened ? 0 : initialState.unreadCount,
                 opened: !initialState.opened,
             }
         }

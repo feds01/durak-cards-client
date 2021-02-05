@@ -67,9 +67,12 @@ const Messages = () => {
             />
             {showButton && (
                 <div style={{
+                    position: "absolute",
                     display: "flex",
+                    bottom: 60,
+                    width: "100%",
+                    flexDirection: "row",
                     justifyContent: "center",
-                    transform: 'translate(0rem, -2rem)'
                 }}>
                     <Button
                         variant="contained"

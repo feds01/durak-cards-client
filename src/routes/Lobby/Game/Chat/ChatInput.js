@@ -52,18 +52,26 @@ export default function ChatInput(props) {
     const classes = useStyles();
     const {disabled} = useChatState();
 
+    function sendMessage(payload) {
+        console.log("emitting message!");
+        props.socket.emit(ServerEvents.MESSAGE, payload);
+    }
+
     return (
         <Formik
             initialValues={{message: ""}}
             validationSchema={MessageSchema}
             onSubmit={(values, helpers) => {
-                props.socket.emit(ServerEvents.MESSAGE, values);
+                sendMessage(values);
+
+                helpers.setSubmitting(false);
                 helpers.resetForm(); // clear message input after submit
             }}
         >
             {(formikProps => {
                 const {
                     values,
+                    isSubmitting,
                     handleChange,
                     handleSubmit
                 } = formikProps;
@@ -85,7 +93,7 @@ export default function ChatInput(props) {
                         <IconButton
                             color="primary"
                             type={"submit"}
-                            disabled={disabled}
+                            disabled={disabled || isSubmitting}
                             className={classes.iconButton}
                             aria-label="directions"
                         >

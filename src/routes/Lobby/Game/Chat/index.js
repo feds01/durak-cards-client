@@ -68,14 +68,6 @@ const Chat = (props) => {
                 <Divider/>
                 <div className={styles.Chat}>
                     <div className={styles.ChatBox}>
-<<<<<<< HEAD
-                        {/*{disabled ? (*/}
-                        {/*    <p>The chat is disabled for this lobby.</p>*/}
-                        {/*) : (*/}
-                        {/*    <p>Welcome to the chat!</p>*/}
-                        {/*)}*/}
-=======
->>>>>>> react-virtuoso
                         <Messages/>
                     </div>
                     <Divider/>

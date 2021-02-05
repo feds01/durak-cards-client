@@ -21,7 +21,7 @@ class ErrorContainer extends React.Component {
         // ignore ResizeObserver loop limit exceeded
         // this is ok in several scenarios according to
         // https://github.com/WICG/resize-observer/issues/38
-        if (event.message === 'ResizeObserver loop limit exceeded') { // @Cleanup
+        if (event.message === "Script error." || event.message === 'ResizeObserver loop limit exceeded') { // @Cleanup
             return;
         }
 

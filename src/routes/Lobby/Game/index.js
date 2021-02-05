@@ -34,6 +34,7 @@ import keyBinds from "./../../../assets/config/key_binds.json";
 // number of opponents in the game. The player avatars will be added depending
 // on the 'area' they have been allocated on the game board.
 import AvatarGridLayout from "./../../../assets/config/avatar_layout.json";
+import SpectatorGridLayout from "./../../../assets/config/spectator_avatar_layout.json";
 
 const drawerWidth = 300;
 const chatDrawerStyles = theme => ({
@@ -477,13 +478,20 @@ class Game extends React.Component {
 
         // Common event for processing any player actions taken...e
         // should be transferred on the 'started_game' event.
-        this.props.socket.on("begin_round", (event) => {
+        this.props.socket.once("begin_round", (event) => {
             this.props.beginRound(); // play gong sound
             this.handleGameStateUpdate(event);
         });
-        this.props.socket.on(ClientEvents.ACTION, this.handleGameStateUpdate);
-        this.props.socket.on(ClientEvents.INVALID_MOVE, this.handleGameStateUpdate);
-        this.props.socket.on(ClientEvents.VICTORY, (event) => {
+
+        if (this.props.isSpectator) {
+            this.props.socket.once(ClientEvents.SPECTATOR_STATE, this.handleGameStateUpdate)
+        } else {
+            this.props.socket.once(ClientEvents.ACTION, this.handleGameStateUpdate);
+            this.props.socket.once(ClientEvents.INVALID_MOVE, this.handleGameStateUpdate);
+        }
+
+
+        this.props.socket.once(ClientEvents.VICTORY, (event) => {
             this.setState({
                 showVictory: true,
                 playerOrder: event.players,
@@ -506,14 +514,14 @@ class Game extends React.Component {
      * uses the AvatarPlayerGrid configuration layout file to distribute the players in the desired
      * order around the game table.
      *
-     * @param region {"players-top"|"players-left"|"players-right"} The region to construct
+     * @param region {"players-top"|"players-left"|"players-right"|"players-bottom"} The region to construct
      * @return The constructed region
      * */
     renderPlayerRegion(region) {
-        const regionOrder = ['players-left', 'players-top', 'players-right'];
+        const regionOrder = ['players-bottom', 'players-left', 'players-top', 'players-right'];
 
         const {players, out} = this.state.game;
-        const layout = AvatarGridLayout[players.length.toString()];
+        const layout = this.props.isSpectator ? SpectatorGridLayout[players.length.toString()] : AvatarGridLayout[players.length.toString()];
 
         // don't do anything if no players are currently present or the region isn't being used.
         if (players.length === 0 || typeof layout[region] === 'undefined') {
@@ -535,7 +543,7 @@ class Game extends React.Component {
 
         // if it's the left hand-side, we need to reverse the list since we want the
         // first player to be closest to the current player.
-        if (region === "players-left") playerSection = playerSection.reverse();
+        if (region === "players-left" || region === "players-bottom") playerSection = playerSection.reverse();
 
         return playerSection.map((player, index) => {
             const avatarUri = this.props.lobby.players.find((p) => p.name === player.name)?.image;
@@ -546,7 +554,7 @@ class Game extends React.Component {
     }
 
     render() {
-        const {socket, chat, lobby, classes} = this.props;
+        const {socket, chat, lobby, isSpectator, classes} = this.props;
         const {isDragging, showAnnouncement, playerOrder, showVictory} = this.state;
 
         return (
@@ -572,7 +580,13 @@ class Game extends React.Component {
                     >
                         <div className={classes.root}>
                             <div className={classes.tableRoot}>
-                                <div className={clsx(styles.GameContainer, classes.content, {
+                                <div
+                                    {...!isSpectator && {
+                                        style: {
+                                            gridTemplateRows: "72px 1fr 8fr 40px"
+                                        }
+                                    }}
+                                    className={clsx(styles.GameContainer, classes.content, {
                                     [classes.contentShift]: chat.opened,
                                 })}>
                                     <Header className={styles.GameHeader} countdown={lobby.roundTimeout}/>
@@ -592,20 +606,27 @@ class Game extends React.Component {
                                         {this.renderPlayerRegion("players-right")}
                                     </div>
 
-                                    <PlayerActions
-                                        className={styles.GameFooter}
-                                        sortRef={this.sortButtonRef}
-                                        skipRef={this.skipButtonRef}
+                                    {!isSpectator ? (
+                                        <PlayerActions
+                                            className={styles.GameFooter}
+                                            sortRef={this.sortButtonRef}
+                                            skipRef={this.skipButtonRef}
 
-                                        socket={socket}
-                                        isDragging={isDragging}
-                                        moveCards={this.moveCards}
-                                        canForfeit={this.canForfeit() && !isDragging}
-                                        setCards={this.setCards}/>
+                                            socket={socket}
+                                            isDragging={isDragging}
+                                            moveCards={this.moveCards}
+                                            canForfeit={this.canForfeit() && !isDragging}
+                                            setCards={this.setCards}/>
+                                    ) : (
+                                        <div className={clsx(styles.PlayerArea, styles.GameFooter)}>
+                                            {this.renderPlayerRegion("players-bottom")}
+                                        </div>
+                                    )}
                                 </div>
                                 <Chat socket={socket}/>
                             </div>
-                            <CardHolder/>
+
+                            {!isSpectator && <CardHolder/>}
                         </div>
                     </DragDropContext>
                 </GameContext.Provider>

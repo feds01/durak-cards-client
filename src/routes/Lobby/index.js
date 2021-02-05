@@ -60,14 +60,14 @@ class LobbyRoute extends React.Component {
         });
 
         // client-side
-        socket.on("connect", () => {
+        socket.once("connect", () => {
             socket.emit(ServerEvents.JOIN_GAME);
         });
 
 
         // The server disconnected us for some reason... re-direct back to home page and
         // clear the session so the user isn't using stale JWTs
-        socket.on(ClientEvents.CLOSE, async (event) => {
+        socket.once(ClientEvents.CLOSE, async (event) => {
             // disable the 'navigation prompt' from alerting the user
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
@@ -80,7 +80,7 @@ class LobbyRoute extends React.Component {
             this.props.history.push("/");
         });
 
-        socket.on("connect_error", async (err) => {
+        socket.once("connect_error", async (err) => {
             // disable the 'navigation prompt' from alerting the user
             // since a navigation might occur based on the error type.
             this.setState({shouldBlockNavigation: false});
@@ -142,7 +142,7 @@ class LobbyRoute extends React.Component {
 
         // if the client is successfully authenticated and joined the lobby
         // on the server, then we can begin to load the lobby...
-        socket.on(ClientEvents.JOINED_GAME, (message) => {
+        socket.once(ClientEvents.JOINED_GAME, (message) => {
             this.setState({
                 loaded: true,
                 ...message,
@@ -152,7 +152,7 @@ class LobbyRoute extends React.Component {
 
         // If a new player joins the lobby, we should update the player
         // list
-        socket.on(ClientEvents.NEW_PLAYER, (message) => {
+        socket.once(ClientEvents.NEW_PLAYER, (message) => {
             this.setState((oldState) => {
                 return {
                     lobby: {
@@ -165,12 +165,12 @@ class LobbyRoute extends React.Component {
         });
 
         // set the lobby stage to 'countdown'
-        socket.on(ClientEvents.COUNTDOWN, () => {
+        socket.once(ClientEvents.COUNTDOWN, () => {
             this.setState({stage: GameStatus.STARTED});
         });
 
         // set the lobby stage to 'game'
-        socket.on(ClientEvents.GAME_STARTED, () => {
+        socket.once(ClientEvents.GAME_STARTED, () => {
             this.setState({stage: GameStatus.PLAYING});
         });
 
@@ -192,6 +192,7 @@ class LobbyRoute extends React.Component {
 
         // disconnect the socket if a connection was established.
         if (this.state.socket !== null) {
+            this.state.socket.offAny(); // remove all listeners on un-mount
             this.state.socket.disconnect();
         }
 
