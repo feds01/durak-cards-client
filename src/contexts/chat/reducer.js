@@ -5,8 +5,8 @@ export const initialState = {
     unreadCount: 0,
 };
 
-export function init(messages) {
-    return {...initialState, messages};
+export function init({disabled, messages}) {
+    return {...initialState, messages, disabled};
 }
 
 export const reducer = (initialState, action) => {

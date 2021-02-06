@@ -216,7 +216,7 @@ class LobbyRoute extends React.Component {
                         {stage === GameStatus.STARTED && <CountDown/>}
                         {stage === GameStatus.PLAYING && (
                             <ErrorContainer>
-                                <ChatProvider chat={this.state.lobby.chat}>
+                                <ChatProvider disabled={this.state.lobby.disabledChat} chat={this.state.lobby.chat}>
                                     <Game {...this.state} />
                                 </ChatProvider>
                             </ErrorContainer>

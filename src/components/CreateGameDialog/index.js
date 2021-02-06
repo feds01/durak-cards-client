@@ -12,13 +12,25 @@ import MaterialSlider from "../MaterialSlider";
 import Checkbox from "@material-ui/core/Checkbox";
 import {createGame} from "../../utils/networking/lobby";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import {makeStyles} from "@material-ui/core/styles";
 
 const defaultGameParameters = {
     roundTimeout: 300,
     maxPlayers: 4,
     with2FA: false,
-    randomPlayerOrder: false,
+    randomPlayerOrder: true,
+    shortGameDeck: false,
+    freeForAll: true,
+    disableChat: false,
 };
+
+const useStyles = makeStyles((theme) => ({
+    checkBox: {
+        '&.MuiIconButton-root': {
+            paddingRight: 4
+        }
+    }
+}))
 
 const GameDialog = (props) => {
     const history = useHistory();
@@ -56,6 +68,7 @@ const GameDialog = (props) => {
 };
 
 const GameDialogForm = (props) => {
+    const classes = useStyles();
     const {values, handleChange, isSubmitting, handleSubmit} = props;
 
     return (
@@ -99,6 +112,7 @@ const GameDialogForm = (props) => {
                         <Checkbox
                             checked={values.with2FA}
                             onChange={handleChange}
+                            className={classes.checkBox}
                             name="with2FA"
                             color="primary"
                         />
@@ -110,11 +124,48 @@ const GameDialogForm = (props) => {
                         <Checkbox
                             checked={values.randomPlayerOrder}
                             onChange={handleChange}
+                            className={classes.checkBox}
                             name="randomPlayerOrder"
                             color="primary"
                         />
                     }
                     label="Begin game with random player order"
+                />
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={values.shortGameDeck}
+                            onChange={handleChange}
+                            className={classes.checkBox}
+                            name="shortGameDeck"
+                            color="primary"
+                        />
+                    }
+                    label="Use a shorter game deck for the game (36 cards)"
+                />
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={values.freeForAll}
+                            onChange={handleChange}
+                            className={classes.checkBox}
+                            name="freeForAll"
+                            color="primary"
+                        />
+                    }
+                    label="Allow attackers to attack without waiting for their turn"
+                />
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={values.disableChat}
+                            onChange={handleChange}
+                            className={classes.checkBox}
+                            name="disableChat"
+                            color="primary"
+                        />
+                    }
+                    label="Disable lobby chat"
                 />
             </div>
             <div className={styles.Submit}>

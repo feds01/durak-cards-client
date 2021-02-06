@@ -53,7 +53,6 @@ export default function ChatInput(props) {
     const {disabled} = useChatState();
 
     function sendMessage(payload) {
-        console.log("emitting message!");
         props.socket.emit(ServerEvents.MESSAGE, payload);
     }
 

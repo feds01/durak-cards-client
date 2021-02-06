@@ -27,8 +27,8 @@ export function useChatDispatch() {
     return context;
 }
 
-export const ChatProvider = ({chat, children }) => {
-    const [messages, dispatch] = useReducer(reducer, chat, init);
+export const ChatProvider = ({disabled, chat, children }) => {
+    const [messages, dispatch] = useReducer(reducer, {disabled, messages: chat}, init);
 
     return (
         <ChatStateContext.Provider value={messages}>
