@@ -478,20 +478,20 @@ class Game extends React.Component {
 
         // Common event for processing any player actions taken...e
         // should be transferred on the 'started_game' event.
-        this.props.socket.once("begin_round", (event) => {
+        this.props.socket.on("begin_round", (event) => {
             this.props.beginRound(); // play gong sound
             this.handleGameStateUpdate(event);
         });
 
         if (this.props.isSpectator) {
-            this.props.socket.once(ClientEvents.SPECTATOR_STATE, this.handleGameStateUpdate)
+            this.props.socket.on(ClientEvents.SPECTATOR_STATE, this.handleGameStateUpdate)
         } else {
-            this.props.socket.once(ClientEvents.ACTION, this.handleGameStateUpdate);
-            this.props.socket.once(ClientEvents.INVALID_MOVE, this.handleGameStateUpdate);
+            this.props.socket.on(ClientEvents.ACTION, this.handleGameStateUpdate);
+            this.props.socket.on(ClientEvents.INVALID_MOVE, this.handleGameStateUpdate);
         }
 
 
-        this.props.socket.once(ClientEvents.VICTORY, (event) => {
+        this.props.socket.on(ClientEvents.VICTORY, (event) => {
             this.setState({
                 showVictory: true,
                 playerOrder: event.players,
