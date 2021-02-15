@@ -11222,9 +11222,9 @@ shallow-clone@^3.0.0:
   dependencies:
     kind-of "^6.0.2"
 
-"shared@git+https://github.com/feds01/durak-cards-shared#master":
+"shared@git+https://github.com/feds01/Durak-Engine#main":
   version "1.0.0"
-  resolved "git+https://github.com/feds01/durak-cards-shared#7d180e3c9aeedf8f884586add7e3b68f159a6a4c"
+  resolved "git+https://github.com/feds01/Durak-Engine#3509bdcfdf0c29e5d5686f2c738025bf2d86c723"
 
 shebang-command@^1.2.0:
   version "1.2.0"

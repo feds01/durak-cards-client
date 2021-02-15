@@ -27,6 +27,9 @@ const CardHolder = props => {
                 nextPlayer = players.find((p) => p.isDefending);
             }
 
+            // we couldn't find the next player, this could occur at the end of the game
+            if (!nextPlayer) return setHighlight([]);
+
             setHighlight(canPlace(deck, tableTop, isDefending, canAttack, trumpCard, nextPlayer));
         } else {
             setHighlight([]);

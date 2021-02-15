@@ -35,7 +35,7 @@
     "react-scripts": "4.0.1",
     "react-transition-group": "^4.4.1",
     "react-virtuoso": "^1.5.4",
-    "shared": "git+https://github.com/feds01/durak-cards-shared#master",
+    "shared": "git+https://github.com/feds01/Durak-Engine#main",
     "socket.io-client": "3.0.4",
     "source-map-explorer": "^2.5.2",
     "typescript": "^4.1.3",
